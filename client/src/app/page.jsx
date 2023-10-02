@@ -1,18 +1,15 @@
-import { DATOS_ROUTE } from "@/utils/ApiRoutes";
+"use client";
+import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
 
-const page = async () => {
-  const res = await fetch(DATOS_ROUTE);
-  const users = await res.json();
-  console.log('users', res)
-  return (
-    <div>
-      {users.map((user) => (
-        <div key={user.id}>
-          <h2>{user.nombre}</h2>
-        </div>
-      ))}
-    </div>
-  );
+
+const HomePage = () => {
+  const router = useRouter();
+  const [isLogged, setIsLogged] = useState(true);
+  useEffect(() => {
+    if (isLogged) router.push("/timesheet");
+  }, []);
+  return <div>HomePage</div>;
 };
 
-export default page;
+export default HomePage;
