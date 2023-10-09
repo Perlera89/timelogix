@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@prisma/client": "^5.4.1",
     "antd": "^5.9.4",
     "dayjs": "^1.11.10",
     "moment": "^2.29.4",
@@ -24,6 +25,7 @@
     "eslint-config-next": "latest",
     "eslint-plugin-react": "^7.33.2",
     "postcss": "latest",
+    "prisma": "^5.4.1",
     "standard": "^17.1.0",
     "tailwindcss": "latest"
   }

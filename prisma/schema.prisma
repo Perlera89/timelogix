@@ -1,0 +1,115 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+model Employe {
+  id                Int                 @id @default(autoincrement())
+  name              String
+  group             String
+  join_date         DateTime            @db.Date
+  first_in          DateTime            @db.Time(6)
+  last_aut          DateTime            @db.Time(6)
+  note              String
+  activities        Activitie[]
+  employe_activitie Employe_Activitie[]
+  employe_timeoff   Employe_TimeOff[]
+  timeoff           TimeOff[]
+}
+
+model Holiday {
+  id         Int      @id @default(autoincrement())
+  name       String
+  start_date DateTime @db.Date
+  end_date   DateTime @db.Date
+  type       String
+}
+
+model Schedule {
+  id            Int             @id @default(autoincrement())
+  name          String
+  start_time    DateTime        @db.Time(6)
+  end_time      DateTime        @db.Time(6)
+  note          String
+  work_schedule Work_Schedule[]
+}
+
+model Work {
+  id            Int             @id @default(autoincrement())
+  name          String
+  work_schedule Work_Schedule[]
+}
+
+model Activitie {
+  id                Int                 @id @default(autoincrement())
+  name              String
+  description       String
+  color             String
+  employe_fk        Int
+  employe           Employe             @relation(fields: [employe_fk], references: [id])
+  clock_in          Clock_In[]
+  employe_activitie Employe_Activitie[]
+  proyects          Proyect[]
+}
+
+model Proyect {
+  id           Int        @id @default(autoincrement())
+  name         String
+  code         String
+  type         String
+  activitie_fk Int
+  clock_in     Clock_In[]
+  activitie    Activitie  @relation(fields: [activitie_fk], references: [id])
+}
+
+model TimeOff {
+  id              Int               @id @default(autoincrement())
+  start_date      DateTime          @db.Date
+  end_date        DateTime          @db.Date
+  status          String
+  note            String
+  type            String
+  employe_fk      Int
+  employe_timeoff Employe_TimeOff[]
+  employe         Employe           @relation(fields: [employe_fk], references: [id])
+}
+
+model Employe_Activitie {
+  id           Int       @id @default(autoincrement())
+  employe_fk   Int
+  activitie_fk Int
+  activitie    Activitie @relation(fields: [activitie_fk], references: [id])
+  employe      Employe   @relation(fields: [employe_fk], references: [id])
+}
+
+model Work_Schedule {
+  id          Int      @id @default(autoincrement())
+  schedule_fk Int
+  work_fk     Int
+  schedule    Schedule @relation(fields: [schedule_fk], references: [id])
+  work        Work     @relation(fields: [work_fk], references: [id])
+}
+
+model Clock_In {
+  id           Int       @id @default(autoincrement())
+  start_time   DateTime  @db.Time(6)
+  date         DateTime  @db.Date
+  note         String
+  activitie_fk Int
+  proyect_fk   Int
+  activitie    Activitie @relation(fields: [activitie_fk], references: [id])
+  proyect      Proyect   @relation(fields: [proyect_fk], references: [id])
+}
+
+model Employe_TimeOff {
+  id         Int     @id @default(autoincrement())
+  employe_fk Int
+  timeoff_fk Int
+  employe    Employe @relation(fields: [employe_fk], references: [id])
+  timeoff    TimeOff @relation(fields: [timeoff_fk], references: [id])
+}
