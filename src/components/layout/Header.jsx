@@ -91,6 +91,7 @@ const HeaderPage = ({ handleCollapsed, collapsed }) => {
           <div className="flex justify-start">
             <Button
               type="text"
+              className="flex items-center justify-center"
               icon={
                 collapsed ? (
                   <RiArrowRightSLine className="text-2xl" title="Show menu" />
@@ -105,7 +106,7 @@ const HeaderPage = ({ handleCollapsed, collapsed }) => {
                 height: 64,
               }}
             />
-            <Title className="flex items-center text-ghost-white" level={4}>
+            <Title className="flex items-center text-ghost-white mt-3" level={4}>
               {path}
             </Title>
           </div>
