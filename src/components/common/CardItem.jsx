@@ -9,10 +9,12 @@ const CardItem = ({ cardTitle, children, filterItems }) => {
       title={cardTitle}
       size="small"
       extra={
-        <RiFilter3Fill
-          onClick={filterItems}
-          className="text-3xl hover:bg-secondary-light rounded-xl p-1 cursor-pointer active:bg-secondary-light/70 transition-colors"
-        />
+        filterItems && (
+          <RiFilter3Fill
+            onClick={filterItems}
+            className="text-3xl hover:bg-secondary-light rounded-xl p-1 cursor-pointer active:bg-secondary-light/70 transition-colors"
+          />
+        )
       }
       style={{
         width: "100%",

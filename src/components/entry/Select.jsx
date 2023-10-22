@@ -5,12 +5,12 @@ import { Select } from "antd";
 const filterOption = (input, option) =>
   (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
 
-const App = ({select, placeholder}) => (
+const App = ({value, placeholder}) => (
   <Select
     showSearch
-    value={select}
+    value={value}
     placeholder={placeholder || "Select"}
-    optionFilterProp="children"
+    optionFilterProp={optins}
     onChange={null}
     onSearch={null}
     filterOption={filterOption}

@@ -57,6 +57,7 @@ const App = ({ title, width, isModalOpen, handleSave, handleCancel, children }) 
       width={width}
       closeIcon={false}
       onCancel={handleCancel}
+      centered
       maskClosable
       modalRender={(modal) => (
         <Draggable

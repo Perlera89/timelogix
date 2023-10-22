@@ -1,9 +1,13 @@
 import { Input } from "antd";
-import { MdOutlineFormatColorText } from "react-icons/md";
+import { IoTextSharp } from "react-icons/io5";
 
-const InputText = ({value, onChange}) => {
+const InputText = ({ placeholder, value, onChange }) => {
   return (
-    <Input value={value} addonBefore={<MdOutlineFormatColorText />} />
+    <Input
+      placeholder={placeholder}
+      value={value}
+      addonBefore={<IoTextSharp />}
+    />
   );
 };
 

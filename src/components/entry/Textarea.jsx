@@ -4,7 +4,7 @@ const { TextArea } = Input;
 
 const App = ({placeholder, maxLength}) => (
     <TextArea
-      maxLength={maxLength || 50}
+      maxLength={maxLength || 500}
       style={{
         height: 120,
         resize: 'none',
