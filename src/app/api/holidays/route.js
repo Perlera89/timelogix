@@ -13,15 +13,15 @@ export async function GET() {
 }
 
 export async function POST(restHoliday) {
-  const { name, startDate, endDate, note } =
+  const { name, startDate, endDate, type} =
     await restHoliday.json();
 
   let days = await prisma.holiday.create({
     data: {
       name: name,
-      startDate: startDate,
-      endDate: endDate,
-      note: note,
+      start_date: startDate,
+      end_date: endDate,
+      type:type
     },
   });
 
