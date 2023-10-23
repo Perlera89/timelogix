@@ -13,10 +13,10 @@ model Employe {
   id                Int      @id @default(autoincrement())
   group_id            Int?  
   name              String
-  join_date         DateTime @db.Date
-  first_in          DateTime @db.Time(6)
-  last_out          DateTime @db.Time(6)
-  note              String
+  join_date         DateTime? @db.Date @default(now())
+  first_in          DateTime? @db.Time(6)
+  last_out          DateTime? @db.Time(6)
+  note              String @default("Empty")
   activities        Activitie[]
   employe_activitie Employe_Activitie[]
   employe_timeoff   Employe_TimeOff[]
@@ -28,6 +28,7 @@ model Employe {
 model Group {
   id      Int      @id @default(autoincrement())
   name    String
+  color   String @default("blue")
   note    String
   employes Employe[] 
   is_deleted Boolean   @default(false) 

@@ -1,6 +1,6 @@
 import React from "react";
 import { Tag, Typography } from "antd";
-import dayjs from 'dayjs'
+import dayjs from "dayjs";
 
 // components
 import Avatar from "@/components/common/Avatar";
@@ -20,19 +20,27 @@ const AddEmployee = ({ employee }) => {
       </div>
       <div className="flex gap-4 my-4">
         <Text>Group:</Text>
-        <Tag bordered={false}>{employee.group}</Tag>
+        <Tag bordered={false}>{employee.group.name}</Tag>
       </div>
       <div className="flex gap-4 my-4">
         <Text>Join Date:</Text>
-        <Text type="secondary">{dayjs(employee.join_date).format("MMM, DD YYYY")}</Text>
+        <Text type="secondary">
+          {dayjs(employee.join_date).format("MMM, DD YYYY")}
+        </Text>
       </div>
       <div className="flex gap-4 my-4">
         <Text>First In:</Text>
-        <Text type="secondary">{dayjs(employee.first_in).format("HH:mm")}</Text>
+        <Text type="secondary">
+          {employee.first_in
+            ? dayjs(employee.first_in).format("HH:mm")
+            : "No hour"}
+        </Text>
       </div>
       <div className="flex gap-4 my-4">
         <Text>Last Out:</Text>
-        <Text type="secondary">{dayjs(employee.last_out).format("HH:mm")}</Text>
+        <Text type="secondary">{employee.first_in
+          ? dayjs(employee.first_in).format("HH:mm")
+          : "No hour"}</Text>
       </div>
       <div className="flex flex-col">
         <Text>Note</Text>

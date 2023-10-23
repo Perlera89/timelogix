@@ -11,7 +11,7 @@ import Avatar from "@/components/common/Avatar";
 import Modal from "@/components/Modal";
 import Drawer from "@/components/common/DrawerItem";
 
-import { Button, Tag, Popconfirm, Typography, Menu } from "antd";
+import { Button, Tag, Popconfirm, Typography, message } from "antd";
 
 const { Text } = Typography;
 
@@ -21,6 +21,7 @@ import { MdRemoveRedEye, MdEdit, MdDelete } from "react-icons/md";
 import { useEffect, useState } from "react";
 import ViewEmployee from "./ViewEmployee";
 import AdminEmployee from "./AdminEmployee";
+import { EMPLOYEES_ROUTE, GROUPS_ROUTE } from "@/utils/apisRoute";
 
 const locale = {
   emptyText: "No Employees",
@@ -35,17 +36,29 @@ const EmployeesPage = () => {
   // states
   const [employee, setEmployee] = useState({});
   const [employees, setEmployees] = useState([]);
-  const [groups, setGroups] = useState([]);
   const [employeesCount, setEmployeesCount] = useState(0);
+  const [employeeSave, setEmployeeSave] = useState(false);
+  const [groups, setGroups] = useState([]);
+  const [groupsCount, setGroupsCount] = useState(0);
   const [openEmployee, setOpenEmployee] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [selectedGroup, setSelectedGroup] = useState("all");
   const [selectedGroupName, setSelectedGroupName] = useState("All");
   const [action, setAction] = useState(employeeAction.add);
+  const [isEmployeeValidated, setIsEmployeeValidated] = useState(false);
+  const handleEmployeeValidation = (isValidated) => {
+    setIsEmployeeValidated(isValidated);
+  };
+
+  const [messageApi, contextHolder] = message.useMessage();
 
   // handlers
+  const handleEmployeeChange = (data) => {
+    setEmployee(data);
+  };
   const handleOpenEmployee = (employee) => {
+    console.log("employee", employee);
     setEmployee(employee);
     setOpenEmployee(true);
   };
@@ -66,15 +79,40 @@ const EmployeesPage = () => {
     setSearchValue(value);
   };
 
+  // save employee
+  const handleSaveEmployee = async () => {
+    try {
+      const response = await axios.post(EMPLOYEES_ROUTE, employee);
+      const newEmployee = response.data;
+      console.log("Employee saved succesfully", newEmployee);
+      setEmployeeSave(true);
+      addSuccess(employee.name);
+      handleCloseModal();
+    } catch (error) {
+      console.log("Error saving employee: ", error);
+    }
+  };
+
+  // message
+  const addSuccess = (name) => {
+    messageApi.open({
+      type: "success",
+      content: `${name} agregado con éxito`,
+      duration: 5,
+    });
+  };
+
   useEffect(() => {
     const fetchEmployees = async () => {
-      const employees = await axios.get("http://localhost:3000/api/employees");
+      const employees = await axios.get(EMPLOYEES_ROUTE);
       const employeesData = employees.data;
-      console.log("data", employeesData);
+      setEmployeesCount(employeesData.length);
+      setEmployeeSave(false);
 
-      const groups = await axios.get("http://localhost:3000/api/groups");
+      const groups = await axios.get(GROUPS_ROUTE);
       const groupsData = groups.data;
       setGroups(groupsData);
+      setGroupsCount(groupsData.length);
 
       if (selectedGroup === "all") {
         setEmployees(employeesData);
@@ -86,7 +124,12 @@ const EmployeesPage = () => {
     };
 
     fetchEmployees();
-  }, [selectedGroup]);
+  }, [employeeSave, selectedGroup]);
+
+  // employee render
+  useEffect(() => {
+    console.log("employee", employee);
+  }, [employee]);
 
   // filters
   const filters = [
@@ -104,9 +147,9 @@ const EmployeesPage = () => {
     items: filters,
     onClick: (value) => {
       console.log("value.key", value.key);
-      console.log('groups', groups)
+      console.log("groups", groups);
       const groupFilter = groups.find((group) => group.id == value.key);
-      console.log('groupFilter', groupFilter)
+      console.log("groupFilter", groupFilter);
 
       const seletedName = groupFilter ? groupFilter.name : "All";
       console.log("seletedName", seletedName);
@@ -174,10 +217,18 @@ const EmployeesPage = () => {
             </div>
           </div>
         ),
-        group: <Tag bordered={false}>{employee.group.name}</Tag>,
+        group: (
+          <Tag bordered={false} color={employee.group.color}>
+            {employee.group.name}
+          </Tag>
+        ),
         joinDate: dayjs(employee.join_date).format("MMM, DD YYYY"),
-        firstIn: dayjs(employee.first_in).format("HH:mm"),
-        lastOut: dayjs(employee.last_aut).format("HH:mm"),
+        firstIn: employee.first_in
+          ? dayjs(employee.first_in).format("HH:mm")
+          : "No hour",
+        lastOut: employee.last_aut
+          ? dayjs(employee.last_aut).format("HH:mm")
+          : "No hour",
         actions: (
           <div className="flex justify-center">
             <Button
@@ -225,13 +276,21 @@ const EmployeesPage = () => {
         <Card cardTitle="Total Groups" filterItems={null}>
           <div className="grid gap-2">
             <FaLayerGroup className="text-5xl text-green-500 bg-green-500/10 p-2 rounded-xl" />
-            <p className="text-green-500 text-xl ml-2">14</p>
+            <p className="text-green-500 text-xl ml-2">{groupsCount}</p>
           </div>
         </Card>
       </div>
 
       <div className="flex justify-between">
-        <Button className="mb-4" onClick={handleOpenModal}>Add employee</Button>
+        <Button
+          className="mb-4"
+          onClick={() => {
+            handleOpenModal();
+            setAction(employeeAction.add);
+          }}
+        >
+          Add employee
+        </Button>
         <div className="mb-4 flex justify-end">
           <Search text="Buscar consumidor" onSearch={handleSearchChange} />
           <div className="flex justify-end">
@@ -253,13 +312,19 @@ const EmployeesPage = () => {
       </Drawer>
       <Modal
         title="Add Employee"
-        width={600}
+        width={500}
         isModalOpen={openModal}
         handleCancel={handleCloseModal}
-        handleSave={null}
+        handleSave={handleSaveEmployee}
+        validate={!isEmployeeValidated}
       >
-        <AdminEmployee />
+        <AdminEmployee
+          employee={employee}
+          handleEmployee={handleEmployeeChange}
+          updateValidation={handleEmployeeValidation}
+        />
       </Modal>
+      {contextHolder}
     </>
   );
 };

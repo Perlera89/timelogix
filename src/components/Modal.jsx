@@ -6,7 +6,15 @@ import { Modal, Button } from "antd";
 // icons
 import { MdClose } from "react-icons/md";
 
-const App = ({ title, width, isModalOpen, handleSave, handleCancel, children }) => {
+const App = ({
+  title,
+  width,
+  isModalOpen,
+  handleSave,
+  handleCancel,
+  validate,
+  children,
+}) => {
   const [disabled, setDisabled] = useState(true);
 
   const [bounds, setBounds] = useState({
@@ -78,6 +86,7 @@ const App = ({ title, width, isModalOpen, handleSave, handleCancel, children }) 
           type="primary"
           onClick={handleSave}
           className="bg-tomato cursor-move"
+          disabled={validate}
         >
           Save
         </Button>,
