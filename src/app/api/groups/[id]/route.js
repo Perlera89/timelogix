@@ -3,9 +3,9 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export async function PUT(rest_employe, { params }) {
+export async function PUT(rest_group, { params }) {
   try {
-    const employeeData = await rest_employe.json();
+    const groupData = await rest_group.json();
     const query = await prisma.employe.update({
       where: { id: Number(params.id) },
       data: {

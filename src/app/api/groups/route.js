@@ -16,13 +16,12 @@ export async function GET() {
 }
 
 export async function POST(restGroup) {
-  const { name, note } =
-    await restGroup.json();
+  const groupData = await restGroup.json();
 
   let group = await prisma.group.create({
     data: {
-      name: name,
-      note: note,
+      name: groupData.name,
+      color: groupData.color,
       is_deleted: false,
     },
   });

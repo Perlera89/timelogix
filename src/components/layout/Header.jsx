@@ -106,7 +106,10 @@ const HeaderPage = ({ handleCollapsed, collapsed }) => {
                 height: 64,
               }}
             />
-            <Title className="flex items-center text-ghost-white mt-3" level={4}>
+            <Title
+              className="flex items-center text-ghost-white mt-3"
+              level={4}
+            >
               {path}
             </Title>
           </div>
@@ -128,7 +131,7 @@ const HeaderPage = ({ handleCollapsed, collapsed }) => {
             ) : (
               <IconButton
                 icon={
-                  <RiPlayFill className="mx-2 text-green-500 text-2xl transition-colors" />
+                  <RiPlayFill className="mx-2 text-green-500 text-2xl transition-colors animate-pulse transform scale-125 duration-1000 animate-3" />
                 }
                 size="default"
                 click={handleOpenModal}

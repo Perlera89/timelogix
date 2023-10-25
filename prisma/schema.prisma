@@ -29,18 +29,26 @@ model Group {
   id      Int      @id @default(autoincrement())
   name    String
   color   String @default("blue")
-  note    String
-  employes Employe[] 
   is_deleted Boolean   @default(false) 
+  employes Employe[] 
 }
 
 model Holiday {
   id         Int      @id @default(autoincrement())
+  type_id Int?
   name       String
   start_date DateTime @db.Date
-  end_date   DateTime @db.Date
-  type       String
+  end_date   DateTime? @db.Date
   is_deleted        Boolean   @default(false)
+  type Type_Holiday? @relation(fields: [type_id], references: [id]) 
+}
+
+model Type_Holiday {
+  id      Int      @id @default(autoincrement())
+  name    String
+  color   String?
+  is_deleted Boolean   @default(false) 
+  holidays Holiday[] 
 }
 
 model Schedule {

@@ -5,9 +5,6 @@ const prisma = new PrismaClient();
 
 export async function GET() {
   let employees = await prisma.employe.findMany({
-    where: {
-      is_deleted: false,
-    },
     include: {
       group: true,
     },

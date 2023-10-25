@@ -7,7 +7,7 @@ import Avatar from "@/components/common/Avatar";
 
 const { Text } = Typography;
 
-const AddEmployee = ({ employee }) => {
+const ViewEmployee = ({ employee }) => {
   return (
     <>
       <div className="flex gap-4 items-center">
@@ -20,7 +20,9 @@ const AddEmployee = ({ employee }) => {
       </div>
       <div className="flex gap-4 my-4">
         <Text>Group:</Text>
-        <Tag bordered={false}>{employee.group.name}</Tag>
+        <Tag bordered={false} color={employee.group.color}>
+          {employee.group.name}
+        </Tag>
       </div>
       <div className="flex gap-4 my-4">
         <Text>Join Date:</Text>
@@ -38,9 +40,11 @@ const AddEmployee = ({ employee }) => {
       </div>
       <div className="flex gap-4 my-4">
         <Text>Last Out:</Text>
-        <Text type="secondary">{employee.first_in
-          ? dayjs(employee.first_in).format("HH:mm")
-          : "No hour"}</Text>
+        <Text type="secondary">
+          {employee.first_in
+            ? dayjs(employee.first_in).format("HH:mm")
+            : "No hour"}
+        </Text>
       </div>
       <div className="flex flex-col">
         <Text>Note</Text>
@@ -50,4 +54,4 @@ const AddEmployee = ({ employee }) => {
   );
 };
 
-export default AddEmployee;
+export default ViewEmployee;

@@ -33,6 +33,9 @@ const SkeletonComponent = () => {
           <Dropdown menu={<Skeleton active />}>
             <Button className="w-32"></Button>
           </Dropdown>
+          <Dropdown menu={<Skeleton active />}>
+            <Button className="w-32"></Button>
+          </Dropdown>
         </div>
       </div>
 
@@ -42,6 +45,9 @@ const SkeletonComponent = () => {
           .map((_, i) => ({ key: i }))}
         columns={[
           SkeletonColumn({ dataIndex: "column1" }),
+          SkeletonColumn({ dataIndex: "column2" }),
+          SkeletonColumn({ dataIndex: "column2" }),
+          SkeletonColumn({ dataIndex: "column2" }),
           SkeletonColumn({ dataIndex: "column2" }),
         ]}
       />

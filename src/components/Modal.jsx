@@ -65,7 +65,6 @@ const App = ({
       width={width}
       closeIcon={false}
       onCancel={handleCancel}
-      centered
       maskClosable
       modalRender={(modal) => (
         <Draggable
@@ -85,7 +84,7 @@ const App = ({
           key="save"
           type="primary"
           onClick={handleSave}
-          className="bg-tomato cursor-move"
+          className="bg-tomato cursor-pointer"
           disabled={validate}
         >
           Save
