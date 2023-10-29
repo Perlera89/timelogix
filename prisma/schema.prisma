@@ -95,14 +95,24 @@ model Proyect {
 model TimeOff {
   id              Int               @id @default(autoincrement())
   employe_id      Int
+  type_id Int
   start_date      DateTime          @db.Date
-  end_date        DateTime          @db.Date
+  end_date        DateTime?          @db.Date
   status          String
-  note            String
-  type            String
+  note            String? @default("Empty")
   is_deleted        Boolean   @default(false)
   employe_timeoff Employe_TimeOff[]
   employe         Employe           @relation(fields: [employe_id], references: [id])
+  type Type_TimeOff? @relation(fields: [type_id], references: [id]) 
+
+}
+
+model Type_TimeOff {
+  id      Int      @id @default(autoincrement())
+  name    String
+  color   String?
+  is_deleted Boolean   @default(false) 
+  timeOff TimeOff[] 
 }
 
 model Employe_Activitie {

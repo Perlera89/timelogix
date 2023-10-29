@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 export async function GET() {
   let items = await prisma.holiday.findMany({
     include: {
-      type: true,
+      type,
     },
   });
   await prisma.$disconnect();

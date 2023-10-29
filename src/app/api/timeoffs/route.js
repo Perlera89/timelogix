@@ -7,10 +7,13 @@ export async function GET() {
   let getTimeOff = await prisma.timeOff.findMany({
     where: {
       is_deleted: false,
-    },include:{
-        employe:true,
-    }
+    },
+    include: {
+      employe,
+      type,
+    },
   });
+  
   await prisma.$disconnect();
   return NextResponse.json(getTimeOff);
 }
@@ -22,14 +25,14 @@ export async function POST(restTimeOff) {
   let timeOff = await prisma.timeOff.create({
     data: {
       start_date: startDate,
-      end_date:endDate,
-      status:status,
-      note:note,
+      end_date: endDate,
+      status: status,
+      note: note,
       type: type,
-      employe:{
-        connect:{
-            id:employeId
-        }
+      employe: {
+        connect: {
+          id: employeId,
+        },
       },
       is_deleted: false,
     },
