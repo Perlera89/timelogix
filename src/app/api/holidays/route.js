@@ -1,14 +1,12 @@
 import { NextResponse } from "next/server";
-import react from "react";
 import { PrismaClient } from "@prisma/client";
-import { MdNoCell } from "react-icons/md";
 
 const prisma = new PrismaClient();
 
 export async function GET() {
   let items = await prisma.holiday.findMany({
     include: {
-      type,
+      type: true,
     },
   });
   await prisma.$disconnect();
@@ -23,8 +21,8 @@ export async function POST(restHoliday) {
     data: {
       name: holidayData.name,
       type_id: holidayData.type,
-      start_date: holidayData.startDate,
-      end_date: holidayData.endDate || null,
+      start_date: holidayData.start_date,
+      end_date: holidayData.end_date || holidayData.start_date,
       type: type,
     },
   });

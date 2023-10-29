@@ -12,7 +12,7 @@ const CardItem = ({ cardTitle, children, filterItems }) => {
         filterItems && (
           <RiFilter3Fill
             onClick={filterItems}
-            className="text-3xl hover:bg-secondary-light rounded-xl p-1 cursor-pointer active:bg-secondary-light/70 transition-colors"
+            className="text-3xl hover:bg-poor-black  rounded-xl p-1 cursor-pointer active:bg-secondary-light/70 transition-colors"
           />
         )
       }

@@ -54,6 +54,8 @@ const HolidaysPage = () => {
   const [selectedType, setSelectedType] = useState("all");
   const [selectedTypeName, setSelectedTypeName] = useState("All");
   const [action, setAction] = useState(holidayAction.add);
+  const [error, setError] = useState("");
+  const [openResult, setOpenResult] = useState(false);
   const [isHolidayValidated, setIsHolidayValidated] = useState(false);
   const [clearModal, setClearModal] = useState(false);
 
@@ -64,25 +66,31 @@ const HolidaysPage = () => {
   const fetchholidays = async (year) => {
     console.log("holiday", holiday);
     setHolidaysUpdate(false);
-    const response = await axios.get(HOLIDAYS_ROUTE);
+    await axios
+      .get(HOLIDAYS_ROUTE)
+      .then((response) => {
+        const holidaysData = response.data.filter(
+          (holiday) =>
+            holiday.is_deleted == false &&
+            new Date(holiday.start_date).getFullYear() == year
+        );
+        console.log("holidaysData", holidaysData);
+        setHolidays(holidaysData);
+        setHolidaysCount(holidaysData.length);
 
-    const holidaysData = response.data.filter(
-      (holiday) =>
-        holiday.is_deleted == false &&
-        new Date(holiday.start_date).getFullYear() == year
-    );
-    console.log("holidaysData", holidaysData);
-    setHolidays(holidaysData);
-    setHolidaysCount(holidaysData.length);
+        const deletedHolidaysData = response.data.filter(
+          (holiday) => holiday.is_deleted
+        );
+        console.log("deletedHolidays", deletedHolidaysData);
+        setDeletedHolidays(deletedHolidaysData);
 
-    const deletedHolidaysData = response.data.filter(
-      (holiday) => holiday.is_deleted
-    );
-    console.log("deletedHolidays", deletedHolidaysData);
-    setDeletedHolidays(deletedHolidaysData);
-
-    // Guardar todos los empleados sin filtrar
-    setAllHolidays(holidaysData);
+        // Guardar todos los empleados sin filtrar
+        setAllHolidays(holidaysData);
+      })
+      .catch((error) => {
+        setError(error);
+        eventHandlers.handleOpenResult();
+      });
   };
 
   // -- type
@@ -99,9 +107,6 @@ const HolidaysPage = () => {
 
   // handlers
   const eventHandlers = {
-    handleHolidayChange: (data) => {
-      setHoliday(data);
-    },
     handleOpenholiday: (holiday) => {
       console.log("holiday", holiday);
       setHoliday(holiday);
@@ -120,6 +125,18 @@ const HolidaysPage = () => {
     handleCloseModal: () => {
       setClearModal(!clearModal);
       setOpenModal(false);
+    },
+    handleOpenResult: () => {
+      setOpenResult(true);
+    },
+    handleCloseResult: () => {
+      setOpenResult(false);
+    },
+    handleOpenResult: () => {
+      setOpenResult(true);
+    },
+    handleCloseResult: () => {
+      setOpenResult(false);
     },
     handleSearchChange: (value) => {
       setHolidays(value);
@@ -145,8 +162,8 @@ const HolidaysPage = () => {
       try {
         if (action == holidayAction.add) {
           const response = await axios.post(HOLIDAYS_ROUTE, holiday);
-          const newholiday = response.data;
-          console.log("holiday saved succesfully", newholiday);
+          const newHoliday = response.data;
+          console.log("holiday saved succesfully", newHoliday);
           setHolidaysUpdate(true);
           messages.addSuccess(holiday.name);
           eventHandlers.handleCloseModal();
@@ -162,46 +179,37 @@ const HolidaysPage = () => {
           eventHandlers.handleCloseModal();
         }
       } catch (error) {
-        <Result
-          title="Submission Failed"
-          text={error.message}
-          error={error}
-          status="error"
-        />;
+        eventHandlers.handleOpenResult();
+        setError(error);
       }
     },
     handleDeleteHoliday: async (holiday) => {
-      try {
-        const id = holiday.id;
-        const name = holiday.name;
-        await axios.put(`${HOLIDAYS_ROUTE}/${id}/delete`);
-        setHolidaysUpdate(true);
-        messages.deletedSuccess(name);
-      } catch (error) {
-        <Result
-          title="Deleted Failed"
-          subtitle="subtitulo"
-          text={error.message}
-          error={error}
-          status="error"
-        />;
-      }
+      const id = holiday.id;
+      const name = holiday.name;
+      await axios
+        .put(`${HOLIDAYS_ROUTE}/${id}/delete`)
+        .then((response) => {
+          setHolidaysUpdate(true);
+          messages.deletedSuccess(name);
+        })
+        .catch((error) => {
+          eventHandlers.handleOpenResult();
+          setError(error);
+        });
     },
     handleRestoreHoliday: async (holiday) => {
-      try {
-        const id = holiday.id;
-        const name = holiday.name;
-        await axios.put(`${HOLIDAYS_ROUTE}/${id}/restore`);
-        setHolidaysUpdate(true);
-        messages.restoredSuccess(name);
-      } catch (error) {
-        <Result
-          title="Restored Failed"
-          text={error.mensaje}
-          error={error}
-          status="error"
-        />;
-      }
+      const id = holiday.id;
+      const name = holiday.name;
+      await axios
+        .put(`${HOLIDAYS_ROUTE}/${id}/restore`)
+        .then((response) => {
+          setHolidaysUpdate(true);
+          messages.restoredSuccess(name);
+        })
+        .catch((error) => {
+          eventHandlers.handleOpenResult();
+          setError(error);
+        });
     },
     handleFilterChange: (value) => {
       setSelectedType(value);
@@ -488,11 +496,18 @@ const HolidaysPage = () => {
         <AdminHoliday
           action={action}
           holiday={holiday}
-          handleholiday={eventHandlers.handleHolidayChange}
+          setHoliday={setHoliday}
           updateValidation={eventHandlers.handleHolidayValidation}
           handleCancel={clearModal}
         />
       </Modal>
+      <Result
+        title={error ? error.request.statusText : null}
+        subtitle={error ? error.message : null}
+        error={error ? error.stack : null}
+        open={openResult}
+        handleClose={eventHandlers.handleCloseResult}
+      />
       {contextHolder}
     </>
   );

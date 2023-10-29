@@ -5,15 +5,12 @@ const prisma = new PrismaClient();
 
 export async function GET() {
   let getTimeOff = await prisma.timeOff.findMany({
-    where: {
-      is_deleted: false,
-    },
     include: {
-      employe,
-      type,
+      employe: true,
+      type: true,
     },
   });
-  
+
   await prisma.$disconnect();
   return NextResponse.json(getTimeOff);
 }

@@ -83,7 +83,7 @@ const App = ({
               type="text"
               icon={<PlusOutlined />}
               onClick={() => handleAdd(inputValue)}
-              disabled={inputValue}
+              disabled={!inputValue}
             >
               Add
             </Button>

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import dayjs from "dayjs";
+import "dayjs/locale/es";
 import { TYPE_HOLIDAYS_ROUTE } from "@/utils/apiRoutes";
 import { message } from "antd";
 
@@ -13,7 +15,7 @@ import Result from "@/components/common/Result";
 const AdminHoliday = ({
   action,
   holiday,
-  handleHoliday,
+  setHoliday,
   updateValidation,
   handleCancel,
 }) => {
@@ -35,14 +37,14 @@ const AdminHoliday = ({
     handleNameChange: (event) => {
       setName(event.target.value);
 
-      handleHoliday((prevData) => ({
+      setHoliday((prevData) => ({
         ...prevData,
         name: event.target.value,
       }));
     },
     handleTypeSelect: (value) => {
       setType(value);
-      handleHoliday((prevData) => ({
+      setHoliday((prevData) => ({
         ...prevData,
         type_id: value,
       }));
@@ -50,18 +52,19 @@ const AdminHoliday = ({
     handleTypeNameChange: (event) => {
       setTypeName(event.target.value);
     },
-    handleStartDateChange: (event) => {
-      setNote(event.target.value);
-      handleHoliday((prevData) => ({
+    handleStartDateChange: (value) => {
+      const formattedDate = dayjs(value).locale("es").format("MMM D YYYY");
+
+      setStartDate(value);
+      setHoliday((prevData) => ({
         ...prevData,
-        start_date: event.target.value,
+        start_date: formattedDate,
       }));
     },
 
     handleColorChange: (color) => {
       setSelectedColor(color.toHexString());
     },
-
     handleAddType: async (name) => {
       const existingTypes = types.map((type) => type.label);
 
@@ -193,7 +196,7 @@ const AdminHoliday = ({
           <DatePicker
             placeholder="Select start date"
             value={startDate}
-            handleChange={null}
+            handleChange={eventHandlers.handleStartDateChange}
           />
         </Badge>
       </div>

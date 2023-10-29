@@ -2,7 +2,7 @@
 import { Button, Tag, Popconfirm, Typography, message } from "antd";
 import axios from "axios";
 import dayjs from "dayjs";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 // components
 import Table from "@/components/common/Table";
@@ -18,15 +18,23 @@ import AdminTimeOff from "./admin/Update";
 import ViewTimeOff from "./admin/View";
 
 // icon
-import { FaUsers, FaLayerGroup } from "react-icons/fa";
+import { FaUsers } from "react-icons/fa";
+import { PiArrowsClockwise } from "react-icons/pi";
+import {
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  SyncOutlined,
+} from "@ant-design/icons";
 import {
   MdRemoveRedEye,
+  MdCheck,
+  MdClose,
   MdEdit,
   MdDelete,
   MdKeyboardReturn,
 } from "react-icons/md";
 
-import { TIMEOFFS_ROUTE, GROUPS_ROUTE } from "@/utils/apiRoutes";
+import { TIMEOFFS_ROUTE, TYPE_TIMEOFFS_ROUTE } from "@/utils/apiRoutes";
 
 const { Text } = Typography;
 
@@ -41,14 +49,16 @@ const TimeOffsPage = () => {
   const [allTimeOffs, setAllTimeOffs] = useState([]);
   const [timeoffs, setTimeOffs] = useState([]);
   const [timeoffsCount, setTimeOffsCount] = useState(0);
+  const [successCount, setSuccessCount] = useState(0);
+  const [processCount, setProcessCount] = useState(0);
+  const [rejectCount, setRejectCount] = useState(0);
   const [timeoffsUpdate, setTimeOffsUpdate] = useState(false);
   const [deletedTimeOffs, setDeletedTimeOffs] = useState([]);
-  const [groups, setGroups] = useState([]);
-  const [groupsCount, setGroupsCount] = useState(0);
+  const [types, setTypes] = useState([]);
   const [openTimeOff, setOpenTimeOff] = useState(false);
   const [openModal, setOpenModal] = useState(false);
-  const [selectedGroup, setSelectedGroup] = useState("all");
-  const [selectedGroupName, setSelectedGroupName] = useState("All");
+  const [selectedType, setSelectedType] = useState("all");
+  const [selectedTypeName, setSelectedTypeName] = useState("All");
   const [action, setAction] = useState(timeoffAction.add);
   const [isTimeOffValidated, setIsTimeOffValidated] = useState(false);
   const [clearModal, setClearModal] = useState(false);
@@ -65,11 +75,27 @@ const TimeOffsPage = () => {
     await axios
       .get(TIMEOFFS_ROUTE)
       .then((response) => {
+        console.log("response.data", response.data);
         const timeoffsData = response.data.filter(
           (timeoff) => timeoff.is_deleted == false
         );
         setTimeOffs(timeoffsData);
         setTimeOffsCount(timeoffsData.length);
+
+        const successCount = timeoffsData.filter(
+          (timeoff) => timeoff.status === "success"
+        ).length;
+        const processCount = timeoffsData.filter(
+          (timeoff) => timeoff.status === "processing"
+        ).length;
+        const rejectCount = timeoffsData.filter(
+          (timeoff) => timeoff.status === "reject"
+        ).length;
+
+        // Actualizar los contadores
+        setSuccessCount(successCount);
+        setProcessCount(processCount);
+        setRejectCount(rejectCount);
 
         const deletedTimeOffsData = response.data.filter(
           (timeoff) => timeoff.is_deleted
@@ -85,13 +111,12 @@ const TimeOffsPage = () => {
       });
   };
 
-  // -- groups
-  const fetchGroups = async () => {
+  // -- types
+  const fetchTypes = async () => {
     await axios
-      .get(GROUPS_ROUTE)
+      .get(TYPE_TIMEOFFS_ROUTE)
       .then((response) => {
-        setGroupsCount(response.data.length);
-        setGroups(response.data);
+        setTypes(response.data);
       })
       .catch((error) => {
         eventHandlers.handleOpenResult();
@@ -101,8 +126,22 @@ const TimeOffsPage = () => {
 
   useEffect(() => {
     fetchTimeOffs();
-    fetchGroups();
+    fetchTypes();
   }, [timeoffsUpdate, timeoff]);
+
+  const handleFilterCard = (value) => {
+    const filterMap = {
+      all: () => true,
+      success: (timeoff) => timeoff.status === "success",
+      processing: (timeoff) => timeoff.status === "processing",
+      reject: (timeoff) => timeoff.status === "reject",
+    };
+
+    const filterFunction = filterMap[value] || (() => false);
+
+    const filteredTimeOffs = timeoffs.filter(filterFunction);
+    setTimeOffs(filteredTimeOffs);
+  };
 
   // handlers
   const eventHandlers = {
@@ -154,7 +193,7 @@ const TimeOffsPage = () => {
             `${TIMEOFFS_ROUTE}/${timeoff.id}`,
             timeoff
           );
-          selectedGroup;
+          selectedType;
           const updatedTimeOff = response.data;
           setTimeOffsUpdate(true);
           messages.editSuccess(updatedTimeOff.name);
@@ -198,7 +237,7 @@ const TimeOffsPage = () => {
       }
     },
     handleFilterChange: (value) => {
-      setSelectedGroup(value);
+      setSelectedType(value);
       filterTimeOffs(value);
     },
   };
@@ -244,9 +283,9 @@ const TimeOffsPage = () => {
     {
       type: "divider",
     },
-    ...groups.map((group) => ({
-      label: group.name,
-      key: group.id,
+    ...types.map((type) => ({
+      label: type.name,
+      key: type.id,
     })),
     {
       label: (
@@ -263,20 +302,18 @@ const TimeOffsPage = () => {
   const filterTimeOffs = (key) => {
     if (key == "all") {
       setTimeOffsUpdate(true);
-      setSelectedGroupName("All");
+      setSelectedTypeName("All");
       setTimeOffs(allTimeOffs);
     } else if (key == "deleted") {
       setTimeOffs(deletedTimeOffs);
-      setSelectedGroupName("Deleted");
+      setSelectedTypeName("Deleted");
     } else {
       console.log("timeoffs", timeoffs);
-      const filter = allTimeOffs.filter(
-        (timeoff) => timeoff.group_id == key
-      );
+      const filter = allTimeOffs.filter((timeoff) => timeoff.type_id == key);
       console.log("filter", filter);
       setTimeOffs(filter);
-      const groupFilter = groups.find((group) => group.id == key);
-      setSelectedGroupName(groupFilter.name);
+      const typeFilter = types.find((type) => type.id == key);
+      setSelectedTypeName(typeFilter.name);
     }
   };
 
@@ -295,29 +332,29 @@ const TimeOffsPage = () => {
       sorter: (a, b) => a.id - b.id,
     },
     {
-      title: "TimeOff",
+      title: "Employee",
       dataIndex: "name",
     },
     {
-      title: "Group",
-      dataIndex: "group",
+      title: "Type",
+      dataIndex: "type",
       align: "center",
     },
     {
-      title: "Join date",
-      dataIndex: "joinDate",
+      title: "Start date",
+      dataIndex: "startDate",
       width: "10%",
       align: "center",
       sorter: (a, b) => a.joinDate - b.joinDate,
     },
     {
-      title: "First in",
-      dataIndex: "firstIn",
+      title: "End date",
+      dataIndex: "endDate",
       align: "center",
     },
     {
-      title: "Last out",
-      dataIndex: "lastOut",
+      title: "Status",
+      dataIndex: "status",
       align: "center",
     },
     {
@@ -335,25 +372,37 @@ const TimeOffsPage = () => {
       name: (
         <div className="flex gap-4 items-center">
           <Avatar letter="D" size="large">
-            <p className="text-lg">{timeoff.name[0]}</p>
+            <p className="text-lg">{timeoff.employe.name[0]}</p>
           </Avatar>
           <div className="flex flex-col">
-            <Text>{timeoff.name}</Text>
+            <Text>{timeoff.employe.name}</Text>
           </div>
         </div>
       ),
-      group: (
-        <Tag bordered={false} color={timeoff.group.color}>
-          {timeoff.group.name}
+      type: (
+        <Tag bordered={false} color={timeoff.type.color}>
+          {timeoff.type.name}
         </Tag>
       ),
-      joinDate: dayjs(timeoff.join_date).format("MMM, DD YYYY"),
-      firstIn: timeoff.first_in
-        ? dayjs(timeoff.first_in).format("HH:mm")
-        : "No hour",
-      lastOut: timeoff.last_aut
-        ? dayjs(timeoff.last_aut).format("HH:mm")
-        : "No hour",
+      startDate: dayjs(timeoff.start_date).format("MMM, DD YYYY"),
+      endDate: timeoff.end_date
+        ? dayjs(timeoff.end_date).format("MMM, DD YYYY")
+        : "No date",
+      status: (
+        <Tag
+          bordered={false}
+          color={timeoff.status}
+          icon={
+            <>
+              {timeoff.status == "success" && <CheckCircleOutlined />}
+              {timeoff.status == "processing" && <SyncOutlined />}
+              {timeoff.status == "error" && <CloseCircleOutlined />}
+            </>
+          }
+        >
+          {timeoff.status}
+        </Tag>
+      ),
       actions: timeoff.is_deleted ? (
         <Popconfirm
           title={`Restore ${timeoff.name}`}
@@ -413,17 +462,43 @@ const TimeOffsPage = () => {
   return (
     <>
       <div className="mb-4 flex gap-4">
-        <Card cardTitle="Total TimeOffs" filterItems={null}>
+        <Card
+          cardTitle="Total timeoffs"
+          filterItems={() => handleFilterCard("all")}
+        >
           <div className="grid gap-2">
             <FaUsers className="text-5xl text-blue-500 bg-blue-500/10 p-2.5 rounded-xl" />
             <p className="text-blue-500 text-xl ml-2">{timeoffsCount}</p>
           </div>
         </Card>
 
-        <Card cardTitle="Total Groups" filterItems={null}>
+        <Card
+          cardTitle="Total success"
+          filterItems={() => handleFilterCard("success")}
+        >
           <div className="grid gap-2">
-            <FaLayerGroup className="text-5xl text-green-500 bg-green-500/10 p-3 rounded-xl" />
-            <p className="text-green-500 text-xl ml-2">{groupsCount}</p>
+            <MdCheck className="text-5xl text-green-500 bg-green-500/10 p-3 rounded-xl" />
+            <p className="text-green-500 text-xl ml-2">{successCount}</p>
+          </div>
+        </Card>
+
+        <Card
+          cardTitle="Total processing"
+          filterItems={() => handleFilterCard("processing")}
+        >
+          <div className="grid gap-2">
+            <PiArrowsClockwise className="text-5xl text-blue-500 bg-blue-500/10 p-2.5 rounded-xl" />
+            <p className="text-blue-500 text-xl ml-2">{processCount}</p>
+          </div>
+        </Card>
+
+        <Card
+          cardTitle="Total reject"
+          filterItems={() => handleFilterCard("reject")}
+        >
+          <div className="grid gap-2">
+            <MdClose className="text-5xl text-red-500 bg-red-500/10 p-2.5 rounded-xl" />
+            <p className="text-red-500 text-xl ml-2">{rejectCount}</p>
           </div>
         </Card>
       </div>
@@ -446,10 +521,7 @@ const TimeOffsPage = () => {
             onSearch={eventHandlers.handleSearchChange}
           />
           <div className="flex justify-end">
-            <Dropdown
-              title={selectedGroupName}
-              filters={filterProps}
-            ></Dropdown>
+            <Dropdown title={selectedTypeName} filters={filterProps}></Dropdown>
           </div>
         </div>
       </div>

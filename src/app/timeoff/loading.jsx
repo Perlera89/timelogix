@@ -20,6 +20,12 @@ const SkeletonComponent = () => {
         <Card size="small" className="w-full">
           <Skeleton active />
         </Card>
+        <Card size="small" className="w-full">
+          <Skeleton active />
+        </Card>
+        <Card size="small" className="w-full">
+          <Skeleton active />
+        </Card>
       </div>
 
       <div className="flex justify-between my-4">
@@ -29,9 +35,6 @@ const SkeletonComponent = () => {
         <div className="flex justify-end gap-4">
           <Dropdown menu={<Skeleton active />}>
             <Button className="w-64"></Button>
-          </Dropdown>
-          <Dropdown menu={<Skeleton active />}>
-            <Button className="w-32"></Button>
           </Dropdown>
           <Dropdown menu={<Skeleton active />}>
             <Button className="w-32"></Button>
@@ -49,6 +52,7 @@ const SkeletonComponent = () => {
           SkeletonColumn({ dataIndex: "column3" }),
           SkeletonColumn({ dataIndex: "column4" }),
           SkeletonColumn({ dataIndex: "column5" }),
+          SkeletonColumn({ dataIndex: "column6" }),
         ]}
       />
     </>
