@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { GROUPS_ROUTE } from "@/utils/apiRoutes";
+import { message } from "antd";
 
 //   components
 import InputText from "@/components/entry/InputText";
@@ -22,68 +23,81 @@ const AdminEmployee = ({
   const [groupsUpdate, setGroupsUpdate] = useState(false);
   const [groupName, setGroupName] = useState(null);
   const [name, setName] = useState(null);
-  const [selectedColor, setSelectedColor] = useState(null);
+  const [selectedColor, setSelectedColor] = useState("#606060");
   const [note, setNote] = useState(null);
   const [error, setError] = useState("");
   const [openResult, setOpenResult] = useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
 
   // handlers
-  const handleNameChange = (event) => {
-    setName(event.target.value);
-    handleEmployee((prevData) => ({
-      ...prevData,
-      name: event.target.value,
-    }));
+  const eventHandlers = {
+    handleNameChange: (event) => {
+      setName(event.target.value);
+
+      handleEmployee((prevData) => ({
+        ...prevData,
+        name: event.target.value,
+      }));
+    },
+    handleGroupSelect: (value) => {
+      setGroup(value);
+      handleEmployee((prevData) => ({
+        ...prevData,
+        group_id: value,
+      }));
+    },
+    handleGroupNameChange: (event) => {
+      setGroupName(event.target.value);
+    },
+    handleNoteChange: (event) => {
+      setNote(event.target.value);
+      handleEmployee((prevData) => ({
+        ...prevData,
+        note: event.target.value,
+      }));
+    },
+
+    handleColorChange: (color) => {
+      setSelectedColor(color.toHexString());
+    },
+
+    handleAddGroup: async (name) => {
+      const existingGroups = groups.map((group) => group.label);
+
+      if (existingGroups.includes(name)) {
+        isExistsMessage(name);
+      } else {
+        const group = {
+          name,
+          color: selectedColor,
+        };
+        await axios
+          .post(GROUPS_ROUTE, group)
+          .then((res) => {
+            console.log(res);
+            setGroupsUpdate(true);
+            setGroupName(null);
+          })
+          .catch((error) => {
+            handleOpenResult();
+            setError(error);
+          });
+      }
+    },
+    handleOpenResult: () => {
+      setOpenResult(true);
+    },
+    handleCloseResult: () => {
+      setOpenResult(false);
+    },
   };
 
-  const handleGroupSelect = (value) => {
-    setGroup(value);
-    handleEmployee((prevData) => ({
-      ...prevData,
-      group_id: value,
-    }));
-  };
-
-  const handleGroupNameChange = (event) => {
-    setGroupName(event.target.value);
-  };
-
-  const handleNoteChange = (event) => {
-    setNote(event.target.value);
-    handleEmployee((prevData) => ({
-      ...prevData,
-      note: event.target.value,
-    }));
-  };
-
-  const handleColorChange = (color) => {
-    setSelectedColor(color.toHexString());
-  };
-
-  const handleAddGroup = async (name) => {
-    const group = {
-      name,
-      color: selectedColor,
-    };
-    await axios
-      .post(GROUPS_ROUTE, group)
-      .then((res) => {
-        console.log(res);
-        setGroupsUpdate(true);
-        setGroupName(null);
-      })
-      .catch((error) => {
-        handleOpenResult();
-        setError(error);
-      });
-  };
-
-  const handleOpenResult = () => {
-    setOpenResult(true);
-  };
-
-  const handleCloseResult = () => {
-    setOpenResult(false);
+  const isExistsMessage = (name) => {
+    messageApi.open({
+      type: "warning",
+      content: `${name} already exists`,
+      duration: 5,
+    });
   };
 
   // validations
@@ -114,12 +128,14 @@ const AdminEmployee = ({
   const resetForm = () => {
     setName(null);
     setGroup(null);
+    setNote(null);
   };
 
   useEffect(() => {
     resetForm();
   }, [handleCancel]);
 
+  // fetch data
   useEffect(() => {
     setGroupsUpdate(false);
     if (action == "edit") {
@@ -151,7 +167,7 @@ const AdminEmployee = ({
           <InputText
             placeholder="Name"
             value={name}
-            handleChange={handleNameChange}
+            handleChange={eventHandlers.handleNameChange}
           />
         </Badge>
         <Badge title="Select group is required" validate={validation.group}>
@@ -160,18 +176,18 @@ const AdminEmployee = ({
             placeholderInput="Enter group"
             items={groups}
             value={group}
-            handleSelect={handleGroupSelect}
+            handleSelect={eventHandlers.handleGroupSelect}
             inputValue={groupName}
-            handleInputChange={handleGroupNameChange}
-            handleAdd={handleAddGroup}
+            handleInputChange={eventHandlers.handleGroupNameChange}
+            handleAdd={eventHandlers.handleAddGroup}
             seletedColor={selectedColor}
-            handleColorChange={handleColorChange}
+            handleColorChange={eventHandlers.handleColorChange}
           />
         </Badge>
         <Textarea
           placeholder="Note"
           value={note}
-          handleChange={handleNoteChange}
+          handleChange={eventHandlers.handleNoteChange}
         />
       </div>
       <Result
@@ -179,8 +195,9 @@ const AdminEmployee = ({
         subtitle={error ? error.message : null}
         error={error ? error.stack : null}
         open={openResult}
-        handleClose={handleCloseResult}
+        handleClose={eventHandlers.handleCloseResult}
       />
+      {contextHolder}
     </>
   );
 };

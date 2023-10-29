@@ -1,5 +1,5 @@
 "use client";
-import { Button, Tag, Popconfirm, Typography, message } from "antd";
+import { Button, Tag, Popconfirm, Typography, message, Spin } from "antd";
 import axios from "axios";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
@@ -29,6 +29,7 @@ import {
 } from "react-icons/md";
 
 import { HOLIDAYS_ROUTE, TYPE_HOLIDAYS_ROUTE } from "@/utils/apiRoutes";
+import Employees from "@/components/timesheet/Employees";
 
 const { Text } = Typography;
 
@@ -40,7 +41,7 @@ const HolidaysPage = () => {
 
   // states
   const [holiday, setHoliday] = useState({});
-  const [year, setYear] = useState("current");
+  const [year, setYear] = useState("2023");
   const [allHolidays, setAllHolidays] = useState([]);
   const [holidays, setHolidays] = useState([]);
   const [holidaysCount, setHolidaysCount] = useState(0);
@@ -50,7 +51,6 @@ const HolidaysPage = () => {
   const [typeHolidaysCount, setTypeHolidaysCount] = useState(0);
   const [openHoliday, setOpenHoliday] = useState(false);
   const [openModal, setOpenModal] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
   const [selectedType, setSelectedType] = useState("all");
   const [selectedTypeName, setSelectedTypeName] = useState("All");
   const [action, setAction] = useState(holidayAction.add);
@@ -61,13 +61,15 @@ const HolidaysPage = () => {
 
   // fetch data
   // -- holiday
-  const fetchholidays = async () => {
+  const fetchholidays = async (year) => {
     console.log("holiday", holiday);
     setHolidaysUpdate(false);
     const response = await axios.get(HOLIDAYS_ROUTE);
 
     const holidaysData = response.data.filter(
-      (holiday) => holiday.is_deleted == false
+      (holiday) =>
+        holiday.is_deleted == false &&
+        new Date(holiday.start_date).getFullYear() == year
     );
     console.log("holidaysData", holidaysData);
     setHolidays(holidaysData);
@@ -91,7 +93,7 @@ const HolidaysPage = () => {
   };
 
   useEffect(() => {
-    fetchholidays();
+    fetchholidays("2023");
     fetchTypeHolidays();
   }, [holidaysUpdate, holiday]);
 
@@ -120,13 +122,24 @@ const HolidaysPage = () => {
       setOpenModal(false);
     },
     handleSearchChange: (value) => {
-      setSearchValue(value);
+      setHolidays(value);
     },
     handleDateChange: ({ target: { value } }) => {
       setYear(value);
     },
     handleHolidayValidation: (isValidated) => {
       setIsHolidayValidated(isValidated);
+    },
+    handleYearChange: (year) => {
+      console.log("year", year.target.value);
+      const yearFilter = holidays.filter(
+        (holiday) =>
+          new Date(holiday.start_date).getFullYear() == year.target.value
+      );
+
+      setYear(year.target.value);
+      setHolidays(yearFilter);
+      fetchholidays(year.target.value);
     },
     handleSaveHoliday: async () => {
       try {
@@ -178,7 +191,7 @@ const HolidaysPage = () => {
       try {
         const id = holiday.id;
         const name = holiday.name;
-        await axios.put(`${holidayS_ROUTE}/${id}/restore`);
+        await axios.put(`${HOLIDAYS_ROUTE}/${id}/restore`);
         setHolidaysUpdate(true);
         messages.restoredSuccess(name);
       } catch (error) {
@@ -253,6 +266,21 @@ const HolidaysPage = () => {
     },
   ];
 
+  const yearOptions = [
+    {
+      label: "2022",
+      value: "2022",
+    },
+    {
+      label: "2023",
+      value: "2023",
+    },
+    {
+      label: "2024",
+      value: "2024",
+    },
+  ];
+
   const filterHolidays = (key) => {
     if (key == "all") {
       setHolidaysUpdate(true);
@@ -314,38 +342,68 @@ const HolidaysPage = () => {
     },
   ];
 
-  const holidayRows = holidays
-    .filter((holiday) =>
-      holiday.name.toLowerCase().includes(searchValue.toLowerCase())
-    )
-    ?.map((holiday, key) => {
-      return {
-        key,
-        id: holiday.id,
-        name: (
-          <div className="flex gap-4 items-center">
-            <Avatar letter="D" size="large">
-              <p className="text-lg">{holiday.name[0]}</p>
-            </Avatar>
-            <div className="flex flex-col">
-              <Text>{holiday.name}</Text>
-            </div>
+  const holidayRows = holidays?.map((holiday, key) => {
+    return {
+      key,
+      id: holiday.id,
+      name: (
+        <div className="flex gap-4 items-center">
+          <Avatar letter="D" size="large">
+            <p className="text-lg">{holiday.name[0]}</p>
+          </Avatar>
+          <div className="flex flex-col">
+            <Text>{holiday.name}</Text>
           </div>
-        ),
-        type: (
-          <Tag bordered={false} color={holiday.type.color}>
-            {holiday.type.name}
-          </Tag>
-        ),
-        startDate: dayjs(holiday.start_date).format("MMM, DD YYYY"),
-        endDate: holiday.end_date
-          ? dayjs(holiday.end_date).format("MMM, DD YYYY")
-          : "No date",
-        actions: holiday.is_deleted ? (
+        </div>
+      ),
+      type: (
+        <Tag bordered={false} color={holiday.type.color}>
+          {holiday.type.name}
+        </Tag>
+      ),
+      startDate: dayjs(holiday.start_date).format("MMM, DD YYYY"),
+      endDate: holiday.end_date
+        ? dayjs(holiday.end_date).format("MMM, DD YYYY")
+        : "No date",
+      actions: holiday.is_deleted ? (
+        <Popconfirm
+          title={`Restore ${holiday.name}`}
+          description="Are you sure you want to restore this holiday?"
+          onConfirm={() => eventHandlers.handleRestoreholiday(holiday)}
+          okType="danger"
+          placement="topLeft"
+          okText="Si"
+          cancelText="No"
+        >
+          <Button
+            type="text"
+            icon={<MdKeyboardReturn title="Restore holiday" />}
+            className="text-green-500 flex items-center justify-center"
+          />
+        </Popconfirm>
+      ) : (
+        <div className="flex justify-center">
+          <Button
+            type="text"
+            icon={<MdRemoveRedEye title="View holiday" />}
+            className="text-blue-500 flex items-center justify-center"
+            onClick={() => eventHandlers.handleOpenholiday(holiday)}
+            disabled={holiday.is_deleted}
+          />
+          <Button
+            type="text"
+            icon={<MdEdit title="Edit holiday" />}
+            className="text-green-500 flex items-center justify-center"
+            onClick={() => {
+              eventHandlers.handleEditholiday(holiday);
+              setAction(holidayAction.edit);
+            }}
+            disabled={holiday.is_deleted}
+          />
           <Popconfirm
-            title={`Restore ${holiday.name}`}
-            description="Are you sure you want to restore this holiday?"
-            onConfirm={() => eventHandlers.handleRestoreholiday(holiday)}
+            title={`Delete ${holiday.name}`}
+            description="Are you sure to delete this holiday?"
+            onConfirm={() => eventHandlers.handleDeleteholiday(holiday)}
             okType="danger"
             placement="topLeft"
             okText="Si"
@@ -353,49 +411,15 @@ const HolidaysPage = () => {
           >
             <Button
               type="text"
-              icon={<MdKeyboardReturn title="Restore holiday" />}
-              className="text-green-500 flex items-center justify-center"
+              icon={<MdDelete title="Delete holiday" />}
+              className="text-red-500 flex items-center justify-center"
+              disabled={holiday.is_deleted}
             />
           </Popconfirm>
-        ) : (
-          <div className="flex justify-center">
-            <Button
-              type="text"
-              icon={<MdRemoveRedEye title="View holiday" />}
-              className="text-blue-500 flex items-center justify-center"
-              onClick={() => eventHandlers.handleOpenholiday(holiday)}
-              disabled={holiday.is_deleted}
-            />
-            <Button
-              type="text"
-              icon={<MdEdit title="Edit holiday" />}
-              className="text-green-500 flex items-center justify-center"
-              onClick={() => {
-                eventHandlers.handleEditholiday(holiday);
-                setAction(holidayAction.edit);
-              }}
-              disabled={holiday.is_deleted}
-            />
-            <Popconfirm
-              title={`Delete ${holiday.name}`}
-              description="Are you sure to delete this holiday?"
-              onConfirm={() => eventHandlers.handleDeleteholiday(holiday)}
-              okType="danger"
-              placement="topLeft"
-              okText="Si"
-              cancelText="No"
-            >
-              <Button
-                type="text"
-                icon={<MdDelete title="Delete holiday" />}
-                className="text-red-500 flex items-center justify-center"
-                disabled={holiday.is_deleted}
-              />
-            </Popconfirm>
-          </div>
-        ),
-      };
-    });
+        </div>
+      ),
+    };
+  });
 
   return (
     <>
@@ -425,21 +449,25 @@ const HolidaysPage = () => {
         >
           Add holiday
         </Button>
-        <div className="mb-4 flex justify-end">
+        <div className="mb-4 flex justify-between gap-2">
           <Search
             text="Search holiday"
+            update={setHolidaysUpdate}
+            options={allHolidays}
             onSearch={eventHandlers.handleSearchChange}
           />
-          <div className="flex justify-end gap-2">
-            <RadioButton />
-            <Dropdown title={selectedTypeName} filters={filterProps}></Dropdown>
-          </div>
+          <RadioButton
+            value={year}
+            options={yearOptions}
+            handleChange={eventHandlers.handleYearChange}
+          />
+          <Dropdown title={selectedTypeName} filters={filterProps}></Dropdown>
         </div>
       </div>
       <Table
         columns={columns}
         data={holidayRows}
-        locale={{ emptyText: "No holidays" }}
+        locale={{ emptyText: "No data" }}
       />
       <Drawer
         title="View holiday"

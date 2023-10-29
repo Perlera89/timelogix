@@ -1,19 +1,33 @@
 import { ColorPicker, Divider } from "antd";
 
 const App = ({ selectedColor, handleColorChange }) => {
+  console.log("selectedColor", selectedColor);
+
+  const colorMap = {
+    "#FFFF00": "yellow",
+    "#FFD700": "gold",
+    "#FFA500": "orange",
+    "#FF0000": "red",
+    "#FF1493": "pink",
+    "#9400D3": "mangenta",
+    "#800080": "purple",
+    "#0000FF": "blue",
+    "#008000": "green",
+    "#00FF00": "lime",
+    "#4682B4": "geekblue",
+    "#800000": "brown",
+    "#5F0000": "cyan",
+  };
 
   return (
     <ColorPicker
       color={selectedColor}
+      defaultValue="#808080"
       showText
       format="hex"
       onChange={handleColorChange}
       className="w-36"
-      styles={{
-        popupOverlayInner: {
-          width: 468 + 24,
-        },
-      }}
+      renderLabel={(color) => <span style={{ color }}>{color.label}</span>}
       presets={[
         {
           label: "Recommended",

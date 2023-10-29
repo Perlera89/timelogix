@@ -47,12 +47,13 @@ const EmployeesPage = () => {
   const [groupsCount, setGroupsCount] = useState(0);
   const [openEmployee, setOpenEmployee] = useState(false);
   const [openModal, setOpenModal] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
   const [selectedGroup, setSelectedGroup] = useState("all");
   const [selectedGroupName, setSelectedGroupName] = useState("All");
   const [action, setAction] = useState(employeeAction.add);
   const [isEmployeeValidated, setIsEmployeeValidated] = useState(false);
   const [clearModal, setClearModal] = useState(false);
+  const [error, setError] = useState("");
+  const [openResult, setOpenResult] = useState(false);
 
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -61,30 +62,41 @@ const EmployeesPage = () => {
   const fetchEmployees = async () => {
     console.log("employee", employee);
     setEmployeesUpdate(false);
-    const response = await axios.get(EMPLOYEES_ROUTE);
+    await axios
+      .get(EMPLOYEES_ROUTE)
+      .then((response) => {
+        const employeesData = response.data.filter(
+          (employee) => employee.is_deleted == false
+        );
+        setEmployees(employeesData);
+        setEmployeesCount(employeesData.length);
 
-    const employeesData = response.data.filter(
-      (employee) => employee.is_deleted == false
-    );
-    console.log("employeesData", employeesData);
-    setEmployees(employeesData);
-    setEmployeesCount(employeesData.length);
+        const deletedEmployeesData = response.data.filter(
+          (employee) => employee.is_deleted
+        );
+        console.log("deletedEmployees", deletedEmployeesData);
+        setDeletedEmployees(deletedEmployeesData);
 
-    const deletedEmployeesData = response.data.filter(
-      (employee) => employee.is_deleted
-    );
-    console.log("deletedEmployees", deletedEmployeesData);
-    setDeletedEmployees(deletedEmployeesData);
-
-    // Guardar todos los empleados sin filtrar
-    setAllEmployees(employeesData);
+        setAllEmployees(employeesData);
+      })
+      .catch((error) => {
+        eventHandlers.handleOpenResult();
+        setError(error);
+      });
   };
 
   // -- groups
   const fetchGroups = async () => {
-    const groups = await axios.get(GROUPS_ROUTE);
-    setGroups(groups.data);
-    setGroupsCount(groups.data.length);
+    await axios
+      .get(GROUPS_ROUTE)
+      .then((response) => {
+        setGroupsCount(response.data.length);
+        setGroups(response.data);
+      })
+      .catch((error) => {
+        eventHandlers.handleOpenResult();
+        setError(error);
+      });
   };
 
   useEffect(() => {
@@ -105,6 +117,12 @@ const EmployeesPage = () => {
     handleCloseEmployee: () => {
       setOpenEmployee(false);
     },
+    handleOpenResult: () => {
+      setOpenResult(true);
+    },
+    handleCloseResult: () => {
+      setOpenResult(false);
+    },
     handleEditEmployee: (employee) => {
       setEmployee(employee);
       eventHandlers.handleOpenModal();
@@ -117,7 +135,7 @@ const EmployeesPage = () => {
       setOpenModal(false);
     },
     handleSearchChange: (value) => {
-      setSearchValue(value);
+      setEmployees(value);
     },
     handleEmployeeValidation: (isValidated) => {
       setIsEmployeeValidated(isValidated);
@@ -143,21 +161,16 @@ const EmployeesPage = () => {
           eventHandlers.handleCloseModal();
         }
       } catch (error) {
-        <Result
-          title="Submission Failed"
-          text={error.message}
-          error={error}
-          status="error"
-        />;
+        eventHandlers.handleOpenResult();
+        setError(error);
       }
     },
     handleDeleteEmployee: async (employee) => {
       try {
         const id = employee.id;
-        const name = employee.name;
         await axios.put(`${EMPLOYEES_ROUTE}/${id}/delete`);
         setEmployeesUpdate(true);
-        messages.deletedSuccess(name);
+        messages.deletedSuccess();
       } catch (error) {
         <Result
           title="Deleted Failed"
@@ -206,10 +219,10 @@ const EmployeesPage = () => {
         duration: 5,
       });
     },
-    deletedSuccess: (name) => {
+    deletedSuccess: () => {
       messageApi.open({
         type: "success",
-        content: `${name} deleted successfully`,
+        content: "deleted successfully",
         duration: 5,
       });
     },
@@ -315,41 +328,71 @@ const EmployeesPage = () => {
     },
   ];
 
-  const employeeRows = employees
-    .filter((employee) =>
-      employee.name.toLowerCase().includes(searchValue.toLowerCase())
-    )
-    ?.map((employee, key) => {
-      return {
-        key,
-        id: employee.id,
-        name: (
-          <div className="flex gap-4 items-center">
-            <Avatar letter="D" size="large">
-              <p className="text-lg">{employee.name[0]}</p>
-            </Avatar>
-            <div className="flex flex-col">
-              <Text>{employee.name}</Text>
-            </div>
+  const employeeRows = employees?.map((employee, key) => {
+    return {
+      key,
+      id: employee.id,
+      name: (
+        <div className="flex gap-4 items-center">
+          <Avatar letter="D" size="large">
+            <p className="text-lg">{employee.name[0]}</p>
+          </Avatar>
+          <div className="flex flex-col">
+            <Text>{employee.name}</Text>
           </div>
-        ),
-        group: (
-          <Tag bordered={false} color={employee.group.color}>
-            {employee.group.name}
-          </Tag>
-        ),
-        joinDate: dayjs(employee.join_date).format("MMM, DD YYYY"),
-        firstIn: employee.first_in
-          ? dayjs(employee.first_in).format("HH:mm")
-          : "No hour",
-        lastOut: employee.last_aut
-          ? dayjs(employee.last_aut).format("HH:mm")
-          : "No hour",
-        actions: employee.is_deleted ? (
+        </div>
+      ),
+      group: (
+        <Tag bordered={false} color={employee.group.color}>
+          {employee.group.name}
+        </Tag>
+      ),
+      joinDate: dayjs(employee.join_date).format("MMM, DD YYYY"),
+      firstIn: employee.first_in
+        ? dayjs(employee.first_in).format("HH:mm")
+        : "No hour",
+      lastOut: employee.last_aut
+        ? dayjs(employee.last_aut).format("HH:mm")
+        : "No hour",
+      actions: employee.is_deleted ? (
+        <Popconfirm
+          title={`Restore ${employee.name}`}
+          description="Are you sure you want to restore this employee?"
+          onConfirm={() => eventHandlers.handleRestoreEmployee(employee)}
+          okType="danger"
+          placement="topLeft"
+          okText="Si"
+          cancelText="No"
+        >
+          <Button
+            type="text"
+            icon={<MdKeyboardReturn title="Restore employee" />}
+            className="text-green-500 flex items-center justify-center"
+          />
+        </Popconfirm>
+      ) : (
+        <div className="flex justify-center">
+          <Button
+            type="text"
+            icon={<MdRemoveRedEye title="View employee" />}
+            className="text-blue-500 flex items-center justify-center"
+            onClick={() => eventHandlers.handleOpenEmployee(employee)}
+            disabled={employee.is_deleted}
+          />
+          <Button
+            type="text"
+            icon={<MdEdit title="Edit employee" />}
+            className="text-green-500 flex items-center justify-center"
+            onClick={() => {
+              eventHandlers.handleEditEmployee(employee);
+              setAction(employeeAction.edit);
+            }}
+            disabled={employee.is_deleted}
+          />
           <Popconfirm
-            title={`Restore ${employee.name}`}
-            description="Are you sure you want to restore this employee?"
-            onConfirm={() => eventHandlers.handleRestoreEmployee(employee)}
+            title={`Delete ${employee.name}`}
+            description="Are you sure to delete this employee?"
+            onConfirm={() => eventHandlers.handleDeleteEmployee(employee)}
             okType="danger"
             placement="topLeft"
             okText="Si"
@@ -357,49 +400,15 @@ const EmployeesPage = () => {
           >
             <Button
               type="text"
-              icon={<MdKeyboardReturn title="Restore employee" />}
-              className="text-green-500 flex items-center justify-center"
+              icon={<MdDelete title="Delete employee" />}
+              className="text-red-500 flex items-center justify-center"
+              disabled={employee.is_deleted}
             />
           </Popconfirm>
-        ) : (
-          <div className="flex justify-center">
-            <Button
-              type="text"
-              icon={<MdRemoveRedEye title="View employee" />}
-              className="text-blue-500 flex items-center justify-center"
-              onClick={() => eventHandlers.handleOpenEmployee(employee)}
-              disabled={employee.is_deleted}
-            />
-            <Button
-              type="text"
-              icon={<MdEdit title="Edit employee" />}
-              className="text-green-500 flex items-center justify-center"
-              onClick={() => {
-                eventHandlers.handleEditEmployee(employee);
-                setAction(employeeAction.edit);
-              }}
-              disabled={employee.is_deleted}
-            />
-            <Popconfirm
-              title={`Delete ${employee.name}`}
-              description="Are you sure to delete this employee?"
-              onConfirm={() => eventHandlers.handleDeleteEmployee(employee)}
-              okType="danger"
-              placement="topLeft"
-              okText="Si"
-              cancelText="No"
-            >
-              <Button
-                type="text"
-                icon={<MdDelete title="Delete employee" />}
-                className="text-red-500 flex items-center justify-center"
-                disabled={employee.is_deleted}
-              />
-            </Popconfirm>
-          </div>
-        ),
-      };
-    });
+        </div>
+      ),
+    };
+  });
 
   return (
     <>
@@ -432,6 +441,8 @@ const EmployeesPage = () => {
         <div className="mb-4 flex justify-end">
           <Search
             text="Search employee"
+            options={allEmployees}
+            update={setEmployeesUpdate}
             onSearch={eventHandlers.handleSearchChange}
           />
           <div className="flex justify-end">
@@ -471,6 +482,13 @@ const EmployeesPage = () => {
           handleCancel={clearModal}
         />
       </Modal>
+      <Result
+        title={error ? error.request.statusText : null}
+        subtitle={error ? error.message : null}
+        error={error ? error.stack : null}
+        open={openResult}
+        handleClose={eventHandlers.handleCloseResult}
+      />
       {contextHolder}
     </>
   );

@@ -16,7 +16,7 @@ const App = ({ children }) => {
   };
 
   return (
-    <Layout className="h-screen flex">
+    <Layout className="h-screen flex select-none">
       <Sider collapsed={collapsed} />
       <Layout>
         <Header handleCollapsed={handleCollapsed} collapsed={collapsed} />

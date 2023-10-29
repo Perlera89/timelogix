@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 body {
   background-color: "#191919";
 }
@@ -31,4 +30,9 @@ body {
 
 .ant-breadcrumb-separator {
   display: none;
+}
+
+.menu-scroll {
+  max-height: 500px;
+  overflow-y: scroll;
 }

@@ -8,7 +8,7 @@ const TimesheetPage = () => {
     <div>
       <div className="flex flex-col gap-4">
         <div className="flex justify-between">
-          <Search />
+          {/* <Search /> */}
           <div className="flex justify-end gap-2">
             <Dropdown title="Tracked hours" />
             <Dropdown title="Employees" />

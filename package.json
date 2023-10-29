@@ -9,10 +9,12 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@google-cloud/speech": "^6.0.2",
     "@prisma/client": "^5.4.1",
     "antd": "^5.9.4",
     "axios": "^1.5.1",
     "dayjs": "^1.11.10",
+    "fuse.js": "^7.0.0",
     "moment": "^2.29.4",
     "next": "latest",
     "react": "latest",

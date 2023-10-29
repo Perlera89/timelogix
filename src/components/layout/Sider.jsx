@@ -68,7 +68,7 @@ const SiderPage = ({ collapsed }) => {
       trigger={null}
       collapsible
       collapsed={collapsed}
-      className="border-r-2 border-border-black"
+      className="border-r-[1px] border-border-black"
     >
       <div className="w-full bg-jet py-4 px-2">
         <Image

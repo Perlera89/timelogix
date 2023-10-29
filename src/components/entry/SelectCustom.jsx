@@ -22,18 +22,22 @@ const App = ({
   const inputRef = useRef(null);
   const [showCloseButton, setShowCloseButton] = useState(false);
   const [open, setOpen] = useState(false); // Estado para controlar la apertura y cierre del Select
+  const filterOption = (input, option) =>
+    (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
 
   return (
     <Select
+      showSearch
       className="w-full"
       value={value}
+      filterOption={filterOption}
       onFocus={() => {
         setOpen(true);
-        setShowCloseButton(true); // Mostrar el botón de cerrar cuando el Select obtiene el foco
+        setShowCloseButton(true);
       }}
       onSelect={(value) => {
         handleSelect(value);
-        setOpen(false); // Cerrar el Select después de seleccionar un elemento
+        setOpen(false);
       }}
       placeholder={placeholder}
       getPopupContainer={() =>
@@ -53,8 +57,8 @@ const App = ({
                 className="mb-2 flex justify-center items-center"
                 icon={<MdClose />}
                 onClick={() => {
-                  setOpen(false); // Cerrar el Select al hacer clic en el botón de cerrar
-                  setShowCloseButton(false); // Ocultar el botón de cerrar
+                  setOpen(false);
+                  setShowCloseButton(false);
                 }}
               />
             </div>
@@ -79,6 +83,7 @@ const App = ({
               type="text"
               icon={<PlusOutlined />}
               onClick={() => handleAdd(inputValue)}
+              disabled={inputValue}
             >
               Add
             </Button>

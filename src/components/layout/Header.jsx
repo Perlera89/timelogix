@@ -81,7 +81,7 @@ const HeaderPage = ({ handleCollapsed, collapsed }) => {
   return (
     <>
       <Header
-        className="border-b-2 border-border-black"
+        className="border-b-[1px] border-border-black"
         style={{
           padding: 0,
           background: "#191919",

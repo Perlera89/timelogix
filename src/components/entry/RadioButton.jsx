@@ -1,33 +1,16 @@
 import React, { useState } from "react";
 import { Radio } from "antd";
 
-const options = [
-  {
-    label: "2022",
-    value: "last",
-  },
-  {
-    label: "2023",
-    value: "current",
-  },
-  {
-    label: "2024",
-    value: "next",
-  },
-];
+const App = ({value, options, handleChange
+}) => {
 
-const App = () => {
-  const [value3, setValue3] = useState("currentYear");
-
-  const onChange3 = ({ target: { value } }) => {
-    setValue3(value);
-  };
 
   return (
     <Radio.Group
+    className="flex"
       options={options}
-      onChange={onChange3}
-      value={value3}
+      onChange={handleChange}
+      value={value}
       optionType="button"
     />
   );
