@@ -1,7 +1,8 @@
 "use client";
-import { Button, Tag, Popconfirm, Typography, message, Spin } from "antd";
+import { Button, Tag, Popconfirm, Typography, message } from "antd";
 import axios from "axios";
 import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
 import { useEffect, useState } from "react";
 
 // components
@@ -10,7 +11,6 @@ import Search from "@/components/entry/Search";
 import RadioButton from "@/components/entry/RadioButton";
 import Dropdown from "@/components/common/Dropdown";
 import Card from "@/components/common/CardItem";
-import Avatar from "@/components/common/Avatar";
 import Modal from "@/components/Modal";
 import Drawer from "@/components/common/DrawerItem";
 import Result from "@/components/common/Result";
@@ -29,7 +29,6 @@ import {
 } from "react-icons/md";
 
 import { HOLIDAYS_ROUTE, TYPE_HOLIDAYS_ROUTE } from "@/utils/apiRoutes";
-import Employees from "@/components/timesheet/Employees";
 
 const { Text } = Typography;
 
@@ -69,6 +68,7 @@ const HolidaysPage = () => {
     await axios
       .get(HOLIDAYS_ROUTE)
       .then((response) => {
+        setSelectedTypeName("All");
         const holidaysData = response.data.filter(
           (holiday) =>
             holiday.is_deleted == false &&
@@ -185,12 +185,12 @@ const HolidaysPage = () => {
     },
     handleDeleteHoliday: async (holiday) => {
       const id = holiday.id;
-      const name = holiday.name;
+      console.log("holiday.id", holiday.id);
       await axios
         .put(`${HOLIDAYS_ROUTE}/${id}/delete`)
         .then((response) => {
           setHolidaysUpdate(true);
-          messages.deletedSuccess(name);
+          messages.deletedSuccess();
         })
         .catch((error) => {
           eventHandlers.handleOpenResult();
@@ -233,10 +233,10 @@ const HolidaysPage = () => {
         duration: 5,
       });
     },
-    deletedSuccess: (name) => {
+    deletedSuccess: () => {
       messageApi.open({
         type: "success",
-        content: `${name} deleted successfully`,
+        content: "deleted successfully",
         duration: 5,
       });
     },
@@ -354,16 +354,7 @@ const HolidaysPage = () => {
     return {
       key,
       id: holiday.id,
-      name: (
-        <div className="flex gap-4 items-center">
-          <Avatar letter="D" size="large">
-            <p className="text-lg">{holiday.name[0]}</p>
-          </Avatar>
-          <div className="flex flex-col">
-            <Text>{holiday.name}</Text>
-          </div>
-        </div>
-      ),
+      name: <Text>{holiday.name}</Text>,
       type: (
         <Tag bordered={false} color={holiday.type.color}>
           {holiday.type.name}
@@ -377,7 +368,7 @@ const HolidaysPage = () => {
         <Popconfirm
           title={`Restore ${holiday.name}`}
           description="Are you sure you want to restore this holiday?"
-          onConfirm={() => eventHandlers.handleRestoreholiday(holiday)}
+          onConfirm={() => eventHandlers.handleRestoreHoliday(holiday)}
           okType="danger"
           placement="topLeft"
           okText="Si"
@@ -411,7 +402,7 @@ const HolidaysPage = () => {
           <Popconfirm
             title={`Delete ${holiday.name}`}
             description="Are you sure to delete this holiday?"
-            onConfirm={() => eventHandlers.handleDeleteholiday(holiday)}
+            onConfirm={() => eventHandlers.handleDeleteHoliday(holiday)}
             okType="danger"
             placement="topLeft"
             okText="Si"
@@ -504,7 +495,6 @@ const HolidaysPage = () => {
       <Result
         title={error ? error.request.statusText : null}
         subtitle={error ? error.message : null}
-        error={error ? error.stack : null}
         open={openResult}
         handleClose={eventHandlers.handleCloseResult}
       />

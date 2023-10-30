@@ -37,7 +37,7 @@ model Holiday {
   id         Int      @id @default(autoincrement())
   type_id Int?
   name       String
-  start_date DateTime @db.Date
+  start_date DateTime? @db.Date
   end_date   DateTime? @db.Date
   is_deleted        Boolean   @default(false)
   type Type_Holiday? @relation(fields: [type_id], references: [id]) 

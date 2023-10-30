@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import dayjs from "dayjs";
-import "dayjs/locale/es";
 import { TYPE_HOLIDAYS_ROUTE } from "@/utils/apiRoutes";
-import { message } from "antd";
+import { message, DatePicker } from "antd";
+import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+
+dayjs.extend(customParseFormat);
+const dateFormat = "YYYY-MM-DD";
+const currentDate = dayjs();
+
+const { RangePicker } = DatePicker;
 
 //   components
 import InputText from "@/components/entry/InputText";
-import DatePicker from "@/components/entry/DatePicker";
+// import DatePicker from "@/components/entry/DatePicker";
 import SelectType from "@/components/entry/SelectCustom";
 import Badge from "@/components/common/Badge";
 import Result from "@/components/common/Result";
@@ -25,8 +31,7 @@ const AdminHoliday = ({
   const [typeName, setTypeName] = useState(null);
   const [name, setName] = useState(null);
   const [type, setType] = useState(null);
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  const [dates, setDates] = useState(null);
   const [selectedColor, setSelectedColor] = useState("#606060");
   const [error, setError] = useState("");
   const [openResult, setOpenResult] = useState(false);
@@ -52,13 +57,23 @@ const AdminHoliday = ({
     handleTypeNameChange: (event) => {
       setTypeName(event.target.value);
     },
-    handleStartDateChange: (value) => {
-      const formattedDate = dayjs(value).locale("es").format("MMM D YYYY");
+    handleDatesChange: (value) => {
+      const selectedDates = value || [];
+      const startDate = selectedDates[0];
+      const endDate = selectedDates[1];
 
-      setStartDate(value);
+      if (startDate && endDate) {
+        if (startDate.isBefore(currentDate, "day")) {
+          setDatesError(true);
+          return;
+        }
+      }
+
+      setDates(selectedDates);
       setHoliday((prevData) => ({
         ...prevData,
-        start_date: formattedDate,
+        start_date: startDate.format("YYYY-MM-DDTHH:mm:ssZ"),
+        end_date: endDate.format("YYYY-MM-DDTHH:mm:ssZ"),
       }));
     },
 
@@ -108,13 +123,13 @@ const AdminHoliday = ({
   const validations = {
     name: (value) => !!value && value.length >= 3,
     type: (value) => !!value,
-    startDate: (value) => !!value,
+    dates: (value) => !!value,
   };
 
   const [validation, setValidation] = useState({
     name: false,
     type: false,
-    startDate: false,
+    dates: false,
   });
 
   // Actualizar el estado de validación
@@ -122,9 +137,9 @@ const AdminHoliday = ({
     setValidation({
       name: validations.name(name),
       type: validations.type(type),
-      startDate: validations.startDate(startDate),
+      dates: validations.dates(dates),
     });
-  }, [name, startDate, type]);
+  }, [name, dates, type]);
 
   // Verificar los campos
   useEffect(() => {
@@ -134,9 +149,8 @@ const AdminHoliday = ({
 
   const resetForm = () => {
     setName(null);
+    setDates(null);
     setType(null);
-    setStartDate(null);
-    setEndDate(null);
   };
 
   useEffect(() => {
@@ -192,18 +206,19 @@ const AdminHoliday = ({
             handleColorChange={eventHandlers.handleColorChange}
           />
         </Badge>
-        <Badge title="Start date is required" validate={validation.startDate}>
-          <DatePicker
-            placeholder="Select start date"
-            value={startDate}
-            handleChange={eventHandlers.handleStartDateChange}
+        <Badge title="Date is required" validate={validation.dates}>
+          <RangePicker
+            className="w-full"
+            placeholder={["Start date", "End date"]}
+            format={dateFormat}
+            value={dates}
+            onChange={eventHandlers.handleDatesChange}
           />
         </Badge>
       </div>
       <Result
         title={error ? error.request.statusText : null}
         subtitle={error ? error.message : null}
-        error={error ? error.stack : null}
         open={openResult}
         handleClose={eventHandlers.handleCloseResult}
       />

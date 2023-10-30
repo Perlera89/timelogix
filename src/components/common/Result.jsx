@@ -22,13 +22,7 @@ const App = ({ title, subtitle, error, open, handleClose }) => (
       </Button>,
     ]}
   >
-    <Result status="error" title={title} subTitle={subtitle} className="px-0">
-      <Paragraph className="overflow-auto h-96 pr-2" >
-        <CloseCircleOutlined className="text-red-500" />
-        &nbsp;
-        {error}
-      </Paragraph>
-    </Result>
+    <Result status="error" title={title} subTitle={subtitle} className="px-0" />
   </Modal>
 );
 
