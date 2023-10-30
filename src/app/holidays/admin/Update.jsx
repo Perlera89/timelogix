@@ -5,18 +5,18 @@ import { message, DatePicker } from "antd";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 
-dayjs.extend(customParseFormat);
-const dateFormat = "YYYY-MM-DD";
-const currentDate = dayjs();
-
-const { RangePicker } = DatePicker;
-
 //   components
 import InputText from "@/components/entry/InputText";
 // import DatePicker from "@/components/entry/DatePicker";
 import SelectType from "@/components/entry/SelectCustom";
 import Badge from "@/components/common/Badge";
 import Result from "@/components/common/Result";
+
+dayjs.extend(customParseFormat);
+const dateFormat = "YYYY-MM-DD";
+const currentDate = dayjs();
+
+const { RangePicker } = DatePicker;
 
 const AdminHoliday = ({
   action,

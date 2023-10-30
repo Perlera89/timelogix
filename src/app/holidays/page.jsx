@@ -1,266 +1,268 @@
-"use client";
-import { Button, Tag, Popconfirm, Typography, message } from "antd";
-import axios from "axios";
-import dayjs from "dayjs";
-import customParseFormat from "dayjs/plugin/customParseFormat";
-import { useEffect, useState } from "react";
+'use client'
+import { Button, Tag, Popconfirm, Typography, message } from 'antd'
+import axios from 'axios'
+import dayjs from 'dayjs'
+import { useEffect, useState } from 'react'
 
 // components
-import Table from "@/components/common/Table";
-import Search from "@/components/entry/Search";
-import RadioButton from "@/components/entry/RadioButton";
-import Dropdown from "@/components/common/Dropdown";
-import Card from "@/components/common/CardItem";
-import Modal from "@/components/Modal";
-import Drawer from "@/components/common/DrawerItem";
-import Result from "@/components/common/Result";
+import Table from '@/components/common/Table'
+import Search from '@/components/entry/Search'
+import RadioButton from '@/components/entry/RadioButton'
+import Dropdown from '@/components/common/Dropdown'
+import Card from '@/components/common/CardItem'
+import Modal from '@/components/Modal'
+import Drawer from '@/components/common/DrawerItem'
+import Result from '@/components/common/Result'
 
-import ViewHoliday from "./admin/View";
-import AdminHoliday from "./admin/Update";
+import ViewHoliday from './admin/View'
+import AdminHoliday from './admin/Update'
 
 // icon
-import { FaTag } from "react-icons/fa";
-import { BsCalendarDateFill } from "react-icons/bs";
+import { FaTag } from 'react-icons/fa'
+import { BsCalendarDateFill } from 'react-icons/bs'
 import {
   MdRemoveRedEye,
   MdEdit,
   MdDelete,
-  MdKeyboardReturn,
-} from "react-icons/md";
+  MdKeyboardReturn
+} from 'react-icons/md'
 
-import { HOLIDAYS_ROUTE, TYPE_HOLIDAYS_ROUTE } from "@/utils/apiRoutes";
+import { HOLIDAYS_ROUTE, TYPE_HOLIDAYS_ROUTE } from '@/utils/apiRoutes'
 
-const { Text } = Typography;
+const { Text } = Typography
 
 const HolidaysPage = () => {
   const holidayAction = {
-    add: "add",
-    edit: "edit",
-  };
+    add: 'add',
+    edit: 'edit'
+  }
 
   // states
-  const [holiday, setHoliday] = useState({});
-  const [year, setYear] = useState("2023");
-  const [allHolidays, setAllHolidays] = useState([]);
-  const [holidays, setHolidays] = useState([]);
-  const [holidaysCount, setHolidaysCount] = useState(0);
-  const [holidaysUpdate, setHolidaysUpdate] = useState(false);
-  const [deletedHolidays, setDeletedHolidays] = useState([]);
-  const [typeHolidays, setTypeHolidays] = useState([]);
-  const [typeHolidaysCount, setTypeHolidaysCount] = useState(0);
-  const [openHoliday, setOpenHoliday] = useState(false);
-  const [openModal, setOpenModal] = useState(false);
-  const [selectedType, setSelectedType] = useState("all");
-  const [selectedTypeName, setSelectedTypeName] = useState("All");
-  const [action, setAction] = useState(holidayAction.add);
-  const [error, setError] = useState("");
-  const [openResult, setOpenResult] = useState(false);
-  const [isHolidayValidated, setIsHolidayValidated] = useState(false);
-  const [clearModal, setClearModal] = useState(false);
+  const [holiday, setHoliday] = useState({})
+  const [year, setYear] = useState('2023')
+  const [allHolidays, setAllHolidays] = useState([])
+  const [holidays, setHolidays] = useState([])
+  const [holidaysCount, setHolidaysCount] = useState(0)
+  const [holidaysUpdate, setHolidaysUpdate] = useState(false)
+  const [deletedHolidays, setDeletedHolidays] = useState([])
+  const [typeHolidays, setTypeHolidays] = useState([])
+  const [typeHolidaysCount, setTypeHolidaysCount] = useState(0)
+  const [openHoliday, setOpenHoliday] = useState(false)
+  const [openModal, setOpenModal] = useState(false)
+  const [selectedType, setSelectedType] = useState('all')
+  const [selectedTypeName, setSelectedTypeName] = useState('All')
+  const [action, setAction] = useState(holidayAction.add)
+  const [error, setError] = useState('')
+  const [openResult, setOpenResult] = useState(false)
+  const [isHolidayValidated, setIsHolidayValidated] = useState(false)
+  const [clearModal, setClearModal] = useState(false)
 
-  const [messageApi, contextHolder] = message.useMessage();
+  const [messageApi, contextHolder] = message.useMessage()
 
   // fetch data
   // -- holiday
   const fetchholidays = async (year) => {
-    console.log("holiday", holiday);
-    setHolidaysUpdate(false);
+    console.log('holiday', holiday)
+    setHolidaysUpdate(false)
     await axios
       .get(HOLIDAYS_ROUTE)
       .then((response) => {
-        setSelectedTypeName("All");
+        console.log('response', response)
         const holidaysData = response.data.filter(
           (holiday) =>
-            holiday.is_deleted == false &&
-            new Date(holiday.start_date).getFullYear() == year
-        );
-        console.log("holidaysData", holidaysData);
-        setHolidays(holidaysData);
-        setHolidaysCount(holidaysData.length);
+            holiday.is_deleted === false &&
+            new Date(holiday.start_date).getFullYear() === Number(year)
+        )
+        console.log('holidaysData', holidaysData)
+        setHolidays(holidaysData)
+        setHolidaysCount(holidaysData.length)
 
         const deletedHolidaysData = response.data.filter(
           (holiday) => holiday.is_deleted
-        );
-        console.log("deletedHolidays", deletedHolidaysData);
-        setDeletedHolidays(deletedHolidaysData);
+        )
+        console.log('deletedHolidays', deletedHolidaysData)
+        setDeletedHolidays(deletedHolidaysData)
 
         // Guardar todos los empleados sin filtrar
-        setAllHolidays(holidaysData);
+        setAllHolidays(holidaysData)
       })
       .catch((error) => {
-        setError(error);
-        eventHandlers.handleOpenResult();
-      });
-  };
+        setError(error)
+        eventHandlers.handleOpenResult()
+      })
+  }
 
   // -- type
   const fetchTypeHolidays = async () => {
-    const typeHolidays = await axios.get(TYPE_HOLIDAYS_ROUTE);
-    setTypeHolidays(typeHolidays.data);
-    setTypeHolidaysCount(typeHolidays.data.length);
-  };
+    const typeHolidays = await axios.get(TYPE_HOLIDAYS_ROUTE)
+    setTypeHolidays(typeHolidays.data)
+    setTypeHolidaysCount(typeHolidays.data.length)
+  }
 
   useEffect(() => {
-    fetchholidays("2023");
-    fetchTypeHolidays();
-  }, [holidaysUpdate, holiday]);
+    fetchholidays('2023')
+    fetchTypeHolidays()
+
+    setSelectedTypeName('All')
+
+    if (selectedType === 'all') {
+      setHolidays(allHolidays)
+    } else {
+      setHolidays(
+        holidays.filter((holiday) => holiday.type.id === selectedType)
+      )
+    }
+  }, [holidaysUpdate, holiday])
 
   // handlers
   const eventHandlers = {
     handleOpenholiday: (holiday) => {
-      console.log("holiday", holiday);
-      setHoliday(holiday);
-      setOpenHoliday(true);
+      console.log('holiday', holiday)
+      setHoliday(holiday)
+      setOpenHoliday(true)
     },
     handleCloseholiday: () => {
-      setOpenHoliday(false);
+      setOpenHoliday(false)
     },
     handleEditholiday: (holiday) => {
-      setHoliday(holiday);
-      eventHandlers.handleOpenModal();
+      setHoliday(holiday)
+      eventHandlers.handleOpenModal()
     },
     handleOpenModal: () => {
-      setOpenModal(true);
+      setOpenModal(true)
     },
     handleCloseModal: () => {
-      setClearModal(!clearModal);
-      setOpenModal(false);
+      setClearModal(!clearModal)
+      setOpenModal(false)
     },
     handleOpenResult: () => {
-      setOpenResult(true);
+      setOpenResult(true)
     },
     handleCloseResult: () => {
-      setOpenResult(false);
-    },
-    handleOpenResult: () => {
-      setOpenResult(true);
-    },
-    handleCloseResult: () => {
-      setOpenResult(false);
+      setOpenResult(false)
     },
     handleSearchChange: (value) => {
-      setHolidays(value);
+      setHolidays(value)
     },
     handleDateChange: ({ target: { value } }) => {
-      setYear(value);
+      setYear(value)
     },
     handleHolidayValidation: (isValidated) => {
-      setIsHolidayValidated(isValidated);
+      setIsHolidayValidated(isValidated)
     },
     handleYearChange: (year) => {
-      console.log("year", year.target.value);
+      console.log('year', year.target.value)
       const yearFilter = holidays.filter(
         (holiday) =>
-          new Date(holiday.start_date).getFullYear() == year.target.value
-      );
+          new Date(holiday.start_date).getFullYear() === year.target.value
+      )
 
-      setYear(year.target.value);
-      setHolidays(yearFilter);
-      fetchholidays(year.target.value);
+      setYear(year.target.value)
+      setHolidays(yearFilter)
+      fetchholidays(year.target.value)
     },
     handleSaveHoliday: async () => {
       try {
-        if (action == holidayAction.add) {
-          const response = await axios.post(HOLIDAYS_ROUTE, holiday);
-          const newHoliday = response.data;
-          console.log("holiday saved succesfully", newHoliday);
-          setHolidaysUpdate(true);
-          messages.addSuccess(holiday.name);
-          eventHandlers.handleCloseModal();
+        if (action === holidayAction.add) {
+          const response = await axios.post(HOLIDAYS_ROUTE, holiday)
+          const newHoliday = response.data
+          console.log('holiday saved succesfully', newHoliday)
+          setHolidaysUpdate(true)
+          messages.addSuccess(holiday.name)
+          eventHandlers.handleCloseModal()
         } else {
           const response = await axios.put(
             `${HOLIDAYS_ROUTE}/${holiday.id}`,
             holiday
-          );
-          selectedType;
-          const updatedholiday = response.data;
-          setHolidaysUpdate(true);
-          messages.editSuccess(updatedholiday.name);
-          eventHandlers.handleCloseModal();
+          )
+          const updatedholiday = response.data
+          setHolidaysUpdate(true)
+          messages.editSuccess(updatedholiday.name)
+          eventHandlers.handleCloseModal()
         }
       } catch (error) {
-        eventHandlers.handleOpenResult();
-        setError(error);
+        eventHandlers.handleOpenResult()
+        setError(error)
       }
     },
     handleDeleteHoliday: async (holiday) => {
-      const id = holiday.id;
-      console.log("holiday.id", holiday.id);
+      const id = holiday.id
+      console.log('holiday.id', holiday.id)
       await axios
         .put(`${HOLIDAYS_ROUTE}/${id}/delete`)
         .then((response) => {
-          setHolidaysUpdate(true);
-          messages.deletedSuccess();
+          setHolidaysUpdate(true)
+          messages.deletedSuccess()
         })
         .catch((error) => {
-          eventHandlers.handleOpenResult();
-          setError(error);
-        });
+          eventHandlers.handleOpenResult()
+          setError(error)
+        })
     },
     handleRestoreHoliday: async (holiday) => {
-      const id = holiday.id;
-      const name = holiday.name;
+      const id = holiday.id
+      const name = holiday.name
       await axios
         .put(`${HOLIDAYS_ROUTE}/${id}/restore`)
         .then((response) => {
-          setHolidaysUpdate(true);
-          messages.restoredSuccess(name);
+          setHolidaysUpdate(true)
+          messages.restoredSuccess(name)
         })
         .catch((error) => {
-          eventHandlers.handleOpenResult();
-          setError(error);
-        });
+          eventHandlers.handleOpenResult()
+          setError(error)
+        })
     },
     handleFilterChange: (value) => {
-      setSelectedType(value);
-      filterHolidays(value);
-    },
-  };
+      setSelectedType(value)
+      filterHolidays(value)
+    }
+  }
 
   // message
   const messages = {
     addSuccess: (name) => {
       messageApi.open({
-        type: "success",
+        type: 'success',
         content: `${name} saved successfully`,
-        duration: 5,
-      });
+        duration: 5
+      })
     },
     editSuccess: (name) => {
       messageApi.open({
-        type: "success",
+        type: 'success',
         content: `${name} updated successfully`,
-        duration: 5,
-      });
+        duration: 5
+      })
     },
     deletedSuccess: () => {
       messageApi.open({
-        type: "success",
-        content: "deleted successfully",
-        duration: 5,
-      });
+        type: 'success',
+        content: 'deleted successfully',
+        duration: 5
+      })
     },
     restoredSuccess: (name) => {
       messageApi.open({
-        type: "success",
+        type: 'success',
         content: `${name} restored successfully`,
-        duration: 5,
-      });
-    },
-  };
+        duration: 5
+      })
+    }
+  }
 
   // filters
   const filters = [
     {
-      label: "All",
-      key: "all",
+      label: 'All',
+      key: 'all'
     },
     {
-      type: "divider",
+      type: 'divider'
     },
     ...typeHolidays.map((type) => ({
       label: type.name,
-      key: type.id,
+      key: type.id
     })),
     {
       label: (
@@ -269,86 +271,88 @@ const HolidaysPage = () => {
           Deleted
         </span>
       ),
-      key: "deleted",
-      danger: true,
-    },
-  ];
+      key: 'deleted',
+      danger: true
+    }
+  ]
 
   const yearOptions = [
     {
-      label: "2022",
-      value: "2022",
+      label: '2022',
+      value: '2022'
     },
     {
-      label: "2023",
-      value: "2023",
+      label: '2023',
+      value: '2023'
     },
     {
-      label: "2024",
-      value: "2024",
-    },
-  ];
+      label: '2024',
+      value: '2024'
+    }
+  ]
 
   const filterHolidays = (key) => {
-    if (key == "all") {
-      setHolidaysUpdate(true);
-      setSelectedTypeName("All");
-      setHolidays(allHolidays);
-    } else if (key == "deleted") {
-      setHolidays(deletedHolidays);
-      setSelectedTypeName("Deleted");
+    if (key === 'all') {
+      setHolidaysUpdate(true)
+      setSelectedTypeName('All')
+      setHolidays(allHolidays)
+    } else if (key === 'deleted') {
+      setHolidays(deletedHolidays)
+      setSelectedTypeName('Deleted')
     } else {
-      console.log("holidays", holidays);
-      const filter = allHolidays.filter((holiday) => holiday.type_id == key);
-      console.log("filter", filter);
-      setHolidays(filter);
-      const typeFilter = typeHolidays.find((type) => type.id == key);
-      setSelectedTypeName(typeFilter.name);
+      console.log('holidays', holidays)
+      const filter = allHolidays.filter(
+        (holiday) => holiday.type_id === Number(key)
+      )
+      console.log('filter', filter)
+      setHolidays(filter)
+      const typeFilter = typeHolidays.find((type) => type.id === Number(key))
+      setSelectedTypeName(typeFilter.name)
     }
-  };
+  }
 
   const filterProps = {
     items: filters,
     onClick: (value) => {
-      eventHandlers.handleFilterChange(value.key);
-    },
-  };
+      eventHandlers.handleFilterChange(value.key)
+    }
+  }
 
   const columns = [
     {
-      title: "",
-      dataIndex: "id",
-      width: "50px",
-      sorter: (a, b) => a.id - b.id,
+      title: '',
+      dataIndex: 'id',
+      width: '50px',
+      sorter: (a, b) => a.id - b.id
     },
     {
-      title: "Holiday",
-      dataIndex: "name",
+      title: 'Holiday',
+      dataIndex: 'name'
     },
     {
-      title: "Type",
-      dataIndex: "type",
-      align: "center",
+      title: 'Type',
+      dataIndex: 'type',
+      align: 'center'
     },
     {
-      title: "Start date",
-      dataIndex: "startDate",
-      width: "10%",
-      align: "center",
-      sorter: (a, b) => a.joinDate - b.joinDate,
+      title: 'Start date',
+      dataIndex: 'startDate',
+      width: '10%',
+      align: 'center',
+      sorter: (a, b) => a.joinDate - b.joinDate
     },
     {
-      title: "End date",
-      dataIndex: "endDate",
-      align: "center",
+      title: 'End date',
+      dataIndex: 'endDate',
+      align: 'center'
     },
     {
-      dataIndex: "actions",
-      fixed: "right",
-      align: "center",
-      width: "100px",
-    },
-  ];
+      dataIndex: 'actions',
+      fixed: 'right',
+      align: 'center',
+      width: '100px'
+    }
+  ]
 
   const holidayRows = holidays?.map((holiday, key) => {
     return {
@@ -360,11 +364,12 @@ const HolidaysPage = () => {
           {holiday.type.name}
         </Tag>
       ),
-      startDate: dayjs(holiday.start_date).format("MMM, DD YYYY"),
+      startDate: dayjs(holiday.start_date).format('MMM, DD YYYY'),
       endDate: holiday.end_date
-        ? dayjs(holiday.end_date).format("MMM, DD YYYY")
-        : "No date",
-      actions: holiday.is_deleted ? (
+        ? dayjs(holiday.end_date).format('MMM, DD YYYY')
+        : 'No date',
+      actions: holiday.is_deleted
+        ? (
         <Popconfirm
           title={`Restore ${holiday.name}`}
           description="Are you sure you want to restore this holiday?"
@@ -380,7 +385,8 @@ const HolidaysPage = () => {
             className="text-green-500 flex items-center justify-center"
           />
         </Popconfirm>
-      ) : (
+          )
+        : (
         <div className="flex justify-center">
           <Button
             type="text"
@@ -394,8 +400,8 @@ const HolidaysPage = () => {
             icon={<MdEdit title="Edit holiday" />}
             className="text-green-500 flex items-center justify-center"
             onClick={() => {
-              eventHandlers.handleEditholiday(holiday);
-              setAction(holidayAction.edit);
+              eventHandlers.handleEditholiday(holiday)
+              setAction(holidayAction.edit)
             }}
             disabled={holiday.is_deleted}
           />
@@ -416,9 +422,9 @@ const HolidaysPage = () => {
             />
           </Popconfirm>
         </div>
-      ),
-    };
-  });
+          )
+    }
+  })
 
   return (
     <>
@@ -442,8 +448,8 @@ const HolidaysPage = () => {
         <Button
           className="mb-4"
           onClick={() => {
-            eventHandlers.handleOpenModal();
-            setAction(holidayAction.add);
+            eventHandlers.handleOpenModal()
+            setAction(holidayAction.add)
           }}
         >
           Add holiday
@@ -466,7 +472,7 @@ const HolidaysPage = () => {
       <Table
         columns={columns}
         data={holidayRows}
-        locale={{ emptyText: "No data" }}
+        locale={{ emptyText: 'No data' }}
       />
       <Drawer
         title="View holiday"
@@ -500,7 +506,7 @@ const HolidaysPage = () => {
       />
       {contextHolder}
     </>
-  );
-};
+  )
+}
 
-export default HolidaysPage;
+export default HolidaysPage

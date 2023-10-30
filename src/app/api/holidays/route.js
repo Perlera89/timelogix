@@ -1,38 +1,38 @@
-import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { NextResponse } from 'next/server'
+import { PrismaClient } from '@prisma/client'
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient()
 
-export async function GET() {
-  let items = await prisma.holiday.findMany({
+export async function GET () {
+  const items = await prisma.holiday.findMany({
     include: {
-      type: true,
-    },
-  });
-  await prisma.$disconnect();
+      type: true
+    }
+  })
+  await prisma.$disconnect()
 
-  return NextResponse.json(items);
+  return NextResponse.json(items)
 }
 
-export async function POST(restHoliday) {
-  const holidayData = await restHoliday.json();
+export async function POST (restHoliday) {
+  const holidayData = await restHoliday.json()
 
-  console.log("holidayData", holidayData);
+  console.log('holidayData', holidayData)
 
-  let days = await prisma.holiday.create({
+  const days = await prisma.holiday.create({
     data: {
-      name: holidayData.name, 
+      name: holidayData.name,
       start_date: holidayData.start_date,
       end_date: holidayData.end_date,
       type: {
         connect: {
-          id: Number(holidayData.type_id),
-        },
+          id: Number(holidayData.type_id)
+        }
       },
-      is_deleted: false,
-    },
-  });
+      is_deleted: false
+    }
+  })
 
-  await prisma.$disconnect();
-  return NextResponse.json(days);
+  await prisma.$disconnect()
+  return NextResponse.json(days)
 }
