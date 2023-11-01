@@ -74,7 +74,6 @@ const EmployeesPage = () => {
         const deletedEmployeesData = response.data.filter(
           (employee) => employee.is_deleted
         )
-        console.log('deletedEmployees', deletedEmployeesData)
         setDeletedEmployees(deletedEmployeesData)
 
         setAllEmployees(employeesData)
@@ -354,12 +353,12 @@ const EmployeesPage = () => {
           {employee.group.name}
         </Tag>
       ),
-      joinDate: dayjs(employee.join_date).format('MMM, DD YYYY'),
+      joinDate: dayjs(employee.join_date).add(1, 'day').format('MMM, DD YYYY'),
       firstIn: employee.first_in
-        ? dayjs(employee.first_in).format('HH:mm')
+        ? dayjs(employee.first_in).add(1, 'day').format('HH:mm')
         : 'No hour',
       lastOut: employee.last_aut
-        ? dayjs(employee.last_aut).format('HH:mm')
+        ? dayjs(employee.last_aut).add(1, 'day').format('HH:mm')
         : 'No hour',
       actions: employee.is_deleted
         ? (

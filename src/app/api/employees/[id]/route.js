@@ -1,27 +1,26 @@
-import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { NextResponse } from 'next/server'
+import { PrismaClient } from '@prisma/client'
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient()
 
-export async function PUT(rest_employe, { params }) {
+export async function PUT (restEmployee, { params }) {
   try {
-    const employeeData = await rest_employe.json();
+    const employeeData = await restEmployee.json()
     const query = await prisma.employe.update({
       where: { id: Number(params.id) },
       data: {
         name: employeeData.name,
         group: {
           connect: {
-            id: Number(employeeData.group_id),
-          },
+            id: Number(employeeData.group_id)
+          }
         },
         note: employeeData.note,
-        is_deleted: false,
-      },
-    });
-    return NextResponse.json(query);
+        is_deleted: false
+      }
+    })
+    return NextResponse.json(query)
   } catch (error) {
-    console.log("error", error);
-    return NextResponse.json(error);
+    return NextResponse.json(error)
   }
 }

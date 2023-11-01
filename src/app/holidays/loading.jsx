@@ -1,14 +1,14 @@
-"use client";
-import { Card, Button, Dropdown, Table, Skeleton } from "antd";
+'use client'
+import { Card, Button, Dropdown, Table, Skeleton } from 'antd'
 
 const SkeletonColumn = ({ dataIndex }) => {
   return {
-    title: "",
+    title: '',
     dataIndex,
     key: dataIndex,
-    render: () => <Skeleton active />,
-  };
-};
+    render: () => <Skeleton active />
+  }
+}
 
 const SkeletonComponent = () => {
   return (
@@ -44,15 +44,15 @@ const SkeletonComponent = () => {
           .fill(null)
           .map((_, i) => ({ key: i }))}
         columns={[
-          SkeletonColumn({ dataIndex: "column1" }),
-          SkeletonColumn({ dataIndex: "column2" }),
-          SkeletonColumn({ dataIndex: "column3" }),
-          SkeletonColumn({ dataIndex: "column4" }),
-          SkeletonColumn({ dataIndex: "column5" }),
+          SkeletonColumn({ dataIndex: 'column1' }),
+          SkeletonColumn({ dataIndex: 'column2' }),
+          SkeletonColumn({ dataIndex: 'column3' }),
+          SkeletonColumn({ dataIndex: 'column4' }),
+          SkeletonColumn({ dataIndex: 'column5' })
         ]}
       />
     </>
-  );
-};
+  )
+}
 
-export default SkeletonComponent;
+export default SkeletonComponent

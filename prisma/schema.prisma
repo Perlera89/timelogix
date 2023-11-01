@@ -3,23 +3,23 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider  = "mysql"
   url       = env("POSTGRESQL_URL")
   // url       = env("POSTGRES_PRISMA_URL")
   // directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
-model Employe {
+model Employee {
   id                Int      @id @default(autoincrement())
   group_id            Int?  
   name              String
-  join_date         DateTime? @db.Date @default(now())
-  first_in          DateTime? @db.Time(6)
-  last_out          DateTime? @db.Time(6)
+  join_date         DateTime? @default(now())
+  first_in          DateTime? @db.Time()
+  last_out          DateTime? @db.Time()
   note              String @default("Empty")
-  activities        Activitie[]
-  employe_activitie Employe_Activitie[]
-  employe_timeoff   Employe_TimeOff[]
+  activities        Activity[]
+  employee_activitys Employee_Activity[]
+  employee_timeoffs   Employee_TimeOff[]
   timeoff           TimeOff[]
   is_deleted        Boolean   @default(false)
   group             Group? @relation(fields: [group_id], references: [id])
@@ -30,7 +30,7 @@ model Group {
   name    String
   color   String @default("blue")
   is_deleted Boolean   @default(false) 
-  employes Employe[] 
+  employees Employee[] 
 }
 
 model Holiday {
@@ -58,51 +58,51 @@ model Schedule {
   end_time      DateTime        @db.Time(6)
   note          String
   is_deleted        Boolean   @default(false)
-  work_schedule Work_Schedule[]
+  work_schedules Work_Schedule[]
 }
 
 model Work {
   id            Int             @id @default(autoincrement())
   name          String
   is_deleted        Boolean   @default(false)
-  work_schedule Work_Schedule[]
+  work_schedules Work_Schedule[]
 }
 
-model Activitie {
+model Activity {
   id                Int                 @id @default(autoincrement())
-  employe_id        Int
+  employee_id        Int
   name              String
   description       String
   color             String
-  employe           Employe             @relation(fields: [employe_id], references: [id])
+  employee          Employee             @relation(fields: [employee_id], references: [id])
   is_deleted        Boolean   @default(false)
   clock_in          Clock_In[]
-  employe_activitie Employe_Activitie[]
+  employee_activity Employee_Activity[]
   proyects          Proyect[]
 }
 
 model Proyect {
   id           Int        @id @default(autoincrement())
-  activitie_id Int
+  activity_id Int
   name         String
   code         String
   type         String
   is_deleted        Boolean   @default(false)
-  clock_in     Clock_In[]
-  activitie    Activitie  @relation(fields: [activitie_id], references: [id])
+  clock_ins     Clock_In[]
+  activity    Activity  @relation(fields: [activity_id], references: [id])
 }
 
 model TimeOff {
   id              Int               @id @default(autoincrement())
-  employe_id      Int
+  employee_id      Int
   type_id Int
   start_date      DateTime          @db.Date
   end_date        DateTime?          @db.Date
   status          String
   note            String? @default("Empty")
   is_deleted        Boolean   @default(false)
-  employe_timeoff Employe_TimeOff[]
-  employe         Employe           @relation(fields: [employe_id], references: [id])
+  employee_timeoff Employee_TimeOff[]
+  employee         Employee           @relation(fields: [employee_id], references: [id])
   type Type_TimeOff? @relation(fields: [type_id], references: [id]) 
 
 }
@@ -112,15 +112,15 @@ model Type_TimeOff {
   name    String
   color   String?
   is_deleted Boolean   @default(false) 
-  timeOff TimeOff[] 
+  timeOffs TimeOff[] 
 }
 
-model Employe_Activitie {
+model Employee_Activity {
   id           Int       @id @default(autoincrement())
-  employe_id   Int
+  employee_id   Int
   activitie_id Int
-  activitie    Activitie @relation(fields: [activitie_id], references: [id])
-  employe      Employe   @relation(fields: [employe_id], references: [id])
+  activity    Activity @relation(fields: [activitie_id], references: [id])
+  employee      Employee   @relation(fields: [employee_id], references: [id])
 }
 
 model Work_Schedule {
@@ -133,20 +133,20 @@ model Work_Schedule {
 
 model Clock_In {
   id           Int       @id @default(autoincrement())
-  activitie_id Int
+  activity_id Int
   proyect_id   Int
   start_time   DateTime  @db.Time(6)
   date         DateTime  @db.Date
   note         String
   is_deleted        Boolean   @default(false)
-  activitie    Activitie @relation(fields: [activitie_id], references: [id])
+  activity    Activity @relation(fields: [activity_id], references: [id])
   proyect      Proyect   @relation(fields: [proyect_id], references: [id])
 }
 
-model Employe_TimeOff {
+model Employee_TimeOff {
   id         Int     @id @default(autoincrement())
-  employe_id Int
+  employee_id Int
   timeoff_id Int
-  employe    Employe @relation(fields: [employe_id], references: [id])
+  employee    Employee @relation(fields: [employee_id], references: [id])
   timeoff    TimeOff @relation(fields: [timeoff_id], references: [id])
 }

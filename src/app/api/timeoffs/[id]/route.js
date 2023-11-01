@@ -1,31 +1,32 @@
-import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { NextResponse } from 'next/server'
+import { PrismaClient } from '@prisma/client'
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient()
 
-export async function PUT(restTimeOff ,{ params }) {
+export async function PUT (restTimeOff, { params }) {
   try {
-    const {startDate, endDate, status, type, note, employeId } =
-    await restTimeOff.json();
+    const { startDate, endDate, status, type, note, employeId } =
+    await restTimeOff.json()
 
-  let timeOff = await prisma.timeOff.update({
-    data: {
-      start_date: startDate,
-      end_date: endDate,
-      status: status,
-      note: note,
-      type: type,
-      employe: {
-        connect: {
-          id: employeId,
+    const timeOff = await prisma.timeOff.update({
+      data: {
+        start_date: startDate,
+        end_date: endDate,
+        status,
+        note,
+        type,
+        employe: {
+          connect: {
+            id: employeId
+          }
         },
+        is_deleted: false
       },
-      is_deleted: false,
-    },where:{ id:Number(params.id)}
-  });
-    return NextResponse.json(timeOff);
+      where: { id: Number(params.id) }
+    })
+    return NextResponse.json(timeOff)
   } catch (error) {
-    console.log("error", error);
-    return NextResponse.json(error);
+    console.log('error', error)
+    return NextResponse.json(error)
   }
 }

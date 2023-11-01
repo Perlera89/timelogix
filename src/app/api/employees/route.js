@@ -4,7 +4,7 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 export async function GET () {
-  const employees = await prisma.employe.findMany({
+  const employees = await prisma.employee.findMany({
     include: {
       group: true
     }
@@ -17,7 +17,7 @@ export async function GET () {
 export async function POST (restEmployee) {
   const employeeData = await restEmployee.json()
 
-  const employee = await prisma.employe.create({
+  const employee = await prisma.employee.create({
     data: {
       name: employeeData.name,
       group: {

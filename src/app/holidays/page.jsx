@@ -67,7 +67,6 @@ const HolidaysPage = () => {
     await axios
       .get(HOLIDAYS_ROUTE)
       .then((response) => {
-        console.log('response', response)
         const holidaysData = response.data.filter(
           (holiday) =>
             holiday.is_deleted === false &&
@@ -337,7 +336,6 @@ const HolidaysPage = () => {
     {
       title: 'Start date',
       dataIndex: 'startDate',
-      width: '10%',
       align: 'center',
       sorter: (a, b) => a.joinDate - b.joinDate
     },

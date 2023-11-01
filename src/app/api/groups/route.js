@@ -1,31 +1,31 @@
-import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { NextResponse } from 'next/server'
+import { PrismaClient } from '@prisma/client'
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient()
 
-export async function GET() {
-  let groups = await prisma.group.findMany({
+export async function GET () {
+  const groups = await prisma.group.findMany({
     where: {
-      is_deleted: false,
-    },
-  });
+      is_deleted: false
+    }
+  })
 
-  await prisma.$disconnect();
+  await prisma.$disconnect()
 
-  return NextResponse.json(groups);
+  return NextResponse.json(groups)
 }
 
-export async function POST(restGroup) {
-  const groupData = await restGroup.json();
+export async function POST (restGroup) {
+  const groupData = await restGroup.json()
 
-  let group = await prisma.group.create({
+  const group = await prisma.group.create({
     data: {
       name: groupData.name,
       color: groupData.color,
-      is_deleted: false,
-    },
-  });
+      is_deleted: false
+    }
+  })
 
-  await prisma.$disconnect();
-  return NextResponse.json(group);
+  await prisma.$disconnect()
+  return NextResponse.json(group)
 }

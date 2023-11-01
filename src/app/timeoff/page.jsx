@@ -1,215 +1,214 @@
-"use client";
-import { Button, Tag, Popconfirm, Typography, message } from "antd";
-import axios from "axios";
-import dayjs from "dayjs";
-import { useEffect, useState, useCallback } from "react";
+'use client'
+import { Button, Tag, Popconfirm, Typography, message } from 'antd'
+import axios from 'axios'
+import dayjs from 'dayjs'
+import { useEffect, useState } from 'react'
 
 // components
-import Table from "@/components/common/Table";
-import Search from "@/components/entry/Search";
-import Dropdown from "@/components/common/Dropdown";
-import Card from "@/components/common/CardItem";
-import Avatar from "@/components/common/Avatar";
-import Modal from "@/components/Modal";
-import Drawer from "@/components/common/DrawerItem";
-import Result from "@/components/common/Result";
+import Table from '@/components/common/Table'
+import Search from '@/components/entry/Search'
+import Dropdown from '@/components/common/Dropdown'
+import Card from '@/components/common/CardItem'
+import Avatar from '@/components/common/Avatar'
+import Modal from '@/components/Modal'
+import Drawer from '@/components/common/DrawerItem'
+import Result from '@/components/common/Result'
 
-import AdminTimeOff from "./admin/Update";
-import ViewTimeOff from "./admin/View";
+import AdminTimeOff from './admin/Update'
+import ViewTimeOff from './admin/View'
 
 // icon
-import { FaUsers } from "react-icons/fa";
-import { PiArrowsClockwise } from "react-icons/pi";
+import { FaUsers } from 'react-icons/fa'
+import { PiArrowsClockwise } from 'react-icons/pi'
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
-  SyncOutlined,
-} from "@ant-design/icons";
+  SyncOutlined
+} from '@ant-design/icons'
 import {
   MdRemoveRedEye,
   MdCheck,
   MdClose,
   MdEdit,
   MdDelete,
-  MdKeyboardReturn,
-} from "react-icons/md";
+  MdKeyboardReturn
+} from 'react-icons/md'
 
-import { TIMEOFFS_ROUTE, TYPE_TIMEOFFS_ROUTE } from "@/utils/apiRoutes";
+import { TIMEOFFS_ROUTE, TYPE_TIMEOFFS_ROUTE } from '@/utils/apiRoutes'
 
-const { Text } = Typography;
+const { Text } = Typography
 
 const TimeOffsPage = () => {
   const timeoffAction = {
-    add: "add",
-    edit: "edit",
-  };
+    add: 'add',
+    edit: 'edit'
+  }
 
   // states
-  const [timeoff, setTimeOff] = useState({});
-  const [allTimeOffs, setAllTimeOffs] = useState([]);
-  const [timeoffs, setTimeOffs] = useState([]);
-  const [timeoffsCount, setTimeOffsCount] = useState(0);
-  const [successCount, setSuccessCount] = useState(0);
-  const [processCount, setProcessCount] = useState(0);
-  const [rejectCount, setRejectCount] = useState(0);
-  const [timeoffsUpdate, setTimeOffsUpdate] = useState(false);
-  const [deletedTimeOffs, setDeletedTimeOffs] = useState([]);
-  const [types, setTypes] = useState([]);
-  const [openTimeOff, setOpenTimeOff] = useState(false);
-  const [openModal, setOpenModal] = useState(false);
-  const [selectedType, setSelectedType] = useState("all");
-  const [selectedTypeName, setSelectedTypeName] = useState("All");
-  const [action, setAction] = useState(timeoffAction.add);
-  const [isTimeOffValidated, setIsTimeOffValidated] = useState(false);
-  const [clearModal, setClearModal] = useState(false);
-  const [error, setError] = useState("");
-  const [openResult, setOpenResult] = useState(false);
+  const [timeoff, setTimeOff] = useState({})
+  const [allTimeOffs, setAllTimeOffs] = useState([])
+  const [timeoffs, setTimeOffs] = useState([])
+  const [timeoffsCount, setTimeOffsCount] = useState(0)
+  const [successCount, setSuccessCount] = useState(0)
+  const [processCount, setProcessCount] = useState(0)
+  const [rejectCount, setRejectCount] = useState(0)
+  const [timeoffsUpdate, setTimeOffsUpdate] = useState(false)
+  const [deletedTimeOffs, setDeletedTimeOffs] = useState([])
+  const [types, setTypes] = useState([])
+  const [openTimeOff, setOpenTimeOff] = useState(false)
+  const [openModal, setOpenModal] = useState(false)
+  const [selectedType, setSelectedType] = useState('all')
+  const [selectedTypeName, setSelectedTypeName] = useState('All')
+  const [action, setAction] = useState(timeoffAction.add)
+  const [isTimeOffValidated, setIsTimeOffValidated] = useState(false)
+  const [clearModal, setClearModal] = useState(false)
+  const [error, setError] = useState('')
+  const [openResult, setOpenResult] = useState(false)
 
-  const [messageApi, contextHolder] = message.useMessage();
+  const [messageApi, contextHolder] = message.useMessage()
 
   // fetch data
   // -- timeoff
   const fetchTimeOffs = async () => {
-    console.log("timeoff", timeoff);
-    setTimeOffsUpdate(false);
+    console.log('timeoff', timeoff)
+    setTimeOffsUpdate(false)
     await axios
       .get(TIMEOFFS_ROUTE)
       .then((response) => {
-        console.log("response.data", response.data);
+        console.log('response.data', response.data)
         const timeoffsData = response.data.filter(
-          (timeoff) => timeoff.is_deleted == false
-        );
-        setTimeOffs(timeoffsData);
-        setTimeOffsCount(timeoffsData.length);
+          (timeoff) => timeoff.is_deleted === false
+        )
+        setTimeOffs(timeoffsData)
+        setTimeOffsCount(timeoffsData.length)
 
         const successCount = timeoffsData.filter(
-          (timeoff) => timeoff.status === "success"
-        ).length;
+          (timeoff) => timeoff.status === 'success'
+        ).length
         const processCount = timeoffsData.filter(
-          (timeoff) => timeoff.status === "processing"
-        ).length;
+          (timeoff) => timeoff.status === 'processing'
+        ).length
         const rejectCount = timeoffsData.filter(
-          (timeoff) => timeoff.status === "reject"
-        ).length;
+          (timeoff) => timeoff.status === 'reject'
+        ).length
 
         // Actualizar los contadores
-        setSuccessCount(successCount);
-        setProcessCount(processCount);
-        setRejectCount(rejectCount);
+        setSuccessCount(successCount)
+        setProcessCount(processCount)
+        setRejectCount(rejectCount)
 
         const deletedTimeOffsData = response.data.filter(
           (timeoff) => timeoff.is_deleted
-        );
-        console.log("deletedTimeOffs", deletedTimeOffsData);
-        setDeletedTimeOffs(deletedTimeOffsData);
+        )
+        console.log('deletedTimeOffs', deletedTimeOffsData)
+        setDeletedTimeOffs(deletedTimeOffsData)
 
-        setAllTimeOffs(timeoffsData);
+        setAllTimeOffs(timeoffsData)
       })
       .catch((error) => {
-        eventHandlers.handleOpenResult();
-        setError(error);
-      });
-  };
+        eventHandlers.handleOpenResult()
+        setError(error)
+      })
+  }
 
   // -- types
   const fetchTypes = async () => {
     await axios
       .get(TYPE_TIMEOFFS_ROUTE)
       .then((response) => {
-        setTypes(response.data);
+        setTypes(response.data)
       })
       .catch((error) => {
-        eventHandlers.handleOpenResult();
-        setError(error);
-      });
-  };
+        eventHandlers.handleOpenResult()
+        setError(error)
+      })
+  }
 
   useEffect(() => {
-    fetchTimeOffs();
-    fetchTypes();
-  }, [timeoffsUpdate, timeoff]);
+    fetchTimeOffs()
+    fetchTypes()
+  }, [timeoffsUpdate, timeoff])
 
   const handleFilterCard = (value) => {
     const filterMap = {
       all: () => true,
-      success: (timeoff) => timeoff.status === "success",
-      processing: (timeoff) => timeoff.status === "processing",
-      reject: (timeoff) => timeoff.status === "reject",
-    };
+      success: (timeoff) => timeoff.status === 'success',
+      processing: (timeoff) => timeoff.status === 'processing',
+      reject: (timeoff) => timeoff.status === 'reject'
+    }
 
-    const filterFunction = filterMap[value] || (() => false);
+    const filterFunction = filterMap[value] || (() => false)
 
-    const filteredTimeOffs = timeoffs.filter(filterFunction);
-    setTimeOffs(filteredTimeOffs);
-  };
+    const filteredTimeOffs = timeoffs.filter(filterFunction)
+    setTimeOffs(filteredTimeOffs)
+  }
 
   // handlers
   const eventHandlers = {
     handleTimeOffChange: (data) => {
-      setTimeOff(data);
+      setTimeOff(data)
     },
     handleOpenTimeOff: (timeoff) => {
-      console.log("timeoff", timeoff);
-      setTimeOff(timeoff);
-      setOpenTimeOff(true);
+      console.log('timeoff', timeoff)
+      setTimeOff(timeoff)
+      setOpenTimeOff(true)
     },
     handleCloseTimeOff: () => {
-      setOpenTimeOff(false);
+      setOpenTimeOff(false)
     },
     handleOpenResult: () => {
-      setOpenResult(true);
+      setOpenResult(true)
     },
     handleCloseResult: () => {
-      setOpenResult(false);
+      setOpenResult(false)
     },
     handleEditTimeOff: (timeoff) => {
-      setTimeOff(timeoff);
-      eventHandlers.handleOpenModal();
+      setTimeOff(timeoff)
+      eventHandlers.handleOpenModal()
     },
     handleOpenModal: () => {
-      setOpenModal(true);
+      setOpenModal(true)
     },
     handleCloseModal: () => {
-      setClearModal(!clearModal);
-      setOpenModal(false);
+      setClearModal(!clearModal)
+      setOpenModal(false)
     },
     handleSearchChange: (value) => {
-      setTimeOffs(value);
+      setTimeOffs(value)
     },
     handleTimeOffValidation: (isValidated) => {
-      setIsTimeOffValidated(isValidated);
+      setIsTimeOffValidated(isValidated)
     },
     handleSaveTimeOff: async () => {
       try {
-        if (action == timeoffAction.add) {
-          const response = await axios.post(TIMEOFFS_ROUTE, timeoff);
-          const newTimeOff = response.data;
-          console.log("TimeOff saved succesfully", newTimeOff);
-          setTimeOffsUpdate(true);
-          messages.addSuccess(timeoff.name);
-          eventHandlers.handleCloseModal();
+        if (action === timeoffAction.add) {
+          const response = await axios.post(TIMEOFFS_ROUTE, timeoff)
+          const newTimeOff = response.data
+          console.log('TimeOff saved succesfully', newTimeOff)
+          setTimeOffsUpdate(true)
+          messages.addSuccess(timeoff.name)
+          eventHandlers.handleCloseModal()
         } else {
           const response = await axios.put(
             `${TIMEOFFS_ROUTE}/${timeoff.id}`,
             timeoff
-          );
-          selectedType;
-          const updatedTimeOff = response.data;
-          setTimeOffsUpdate(true);
-          messages.editSuccess(updatedTimeOff.name);
-          eventHandlers.handleCloseModal();
+          )
+          const updatedTimeOff = response.data
+          setTimeOffsUpdate(true)
+          messages.editSuccess(updatedTimeOff.name)
+          eventHandlers.handleCloseModal()
         }
       } catch (error) {
-        eventHandlers.handleOpenResult();
-        setError(error);
+        eventHandlers.handleOpenResult()
+        setError(error)
       }
     },
     handleDeleteTimeOff: async (timeoff) => {
       try {
-        const id = timeoff.id;
-        await axios.put(`${TIMEOFFS_ROUTE}/${id}/delete`);
-        setTimeOffsUpdate(true);
-        messages.deletedSuccess();
+        const id = timeoff.id
+        await axios.put(`${TIMEOFFS_ROUTE}/${id}/delete`)
+        setTimeOffsUpdate(true)
+        messages.deletedSuccess()
       } catch (error) {
         <Result
           title="Deleted Failed"
@@ -217,75 +216,75 @@ const TimeOffsPage = () => {
           text={error.message}
           error={error}
           status="error"
-        />;
+        />
       }
     },
     handleRestoreTimeOff: async (timeoff) => {
       try {
-        const id = timeoff.id;
-        const name = timeoff.name;
-        await axios.put(`${TIMEOFFS_ROUTE}/${id}/restore`);
-        setTimeOffsUpdate(true);
-        messages.restoredSuccess(name);
+        const id = timeoff.id
+        const name = timeoff.name
+        await axios.put(`${TIMEOFFS_ROUTE}/${id}/restore`)
+        setTimeOffsUpdate(true)
+        messages.restoredSuccess(name)
       } catch (error) {
         <Result
           title="Restored Failed"
           text={error.mensaje}
           error={error}
           status="error"
-        />;
+        />
       }
     },
     handleFilterChange: (value) => {
-      setSelectedType(value);
-      filterTimeOffs(value);
-    },
-  };
+      setSelectedType(value)
+      filterTimeOffs(value)
+    }
+  }
 
   // message
   const messages = {
     addSuccess: (name) => {
       messageApi.open({
-        type: "success",
+        type: 'success',
         content: `${name} saved successfully`,
-        duration: 5,
-      });
+        duration: 5
+      })
     },
     editSuccess: (name) => {
       messageApi.open({
-        type: "success",
+        type: 'success',
         content: `${name} updated successfully`,
-        duration: 5,
-      });
+        duration: 5
+      })
     },
     deletedSuccess: () => {
       messageApi.open({
-        type: "success",
-        content: "deleted successfully",
-        duration: 5,
-      });
+        type: 'success',
+        content: 'deleted successfully',
+        duration: 5
+      })
     },
     restoredSuccess: (name) => {
       messageApi.open({
-        type: "success",
+        type: 'success',
         content: `${name} restored successfully`,
-        duration: 5,
-      });
-    },
-  };
+        duration: 5
+      })
+    }
+  }
 
   // filters
   const filters = [
     {
-      label: "All",
-      key: "all",
+      label: 'All',
+      key: 'all'
     },
     {
-      type: "divider",
+      type: 'divider'
     },
     ...types.map((type) => ({
       label: type.name,
-      key: type.id,
+      key: type.id
     })),
     {
       label: (
@@ -294,76 +293,76 @@ const TimeOffsPage = () => {
           Deleted
         </span>
       ),
-      key: "deleted",
-      danger: true,
-    },
-  ];
+      key: 'deleted',
+      danger: true
+    }
+  ]
 
   const filterTimeOffs = (key) => {
-    if (key == "all") {
-      setTimeOffsUpdate(true);
-      setSelectedTypeName("All");
-      setTimeOffs(allTimeOffs);
-    } else if (key == "deleted") {
-      setTimeOffs(deletedTimeOffs);
-      setSelectedTypeName("Deleted");
+    if (key === 'all') {
+      setTimeOffsUpdate(true)
+      setSelectedTypeName('All')
+      setTimeOffs(allTimeOffs)
+    } else if (key === 'deleted') {
+      setTimeOffs(deletedTimeOffs)
+      setSelectedTypeName('Deleted')
     } else {
-      console.log("timeoffs", timeoffs);
-      const filter = allTimeOffs.filter((timeoff) => timeoff.type_id == key);
-      console.log("filter", filter);
-      setTimeOffs(filter);
-      const typeFilter = types.find((type) => type.id == key);
-      setSelectedTypeName(typeFilter.name);
+      console.log('timeoffs', timeoffs)
+      const filter = allTimeOffs.filter((timeoff) => timeoff.type_id === Number(key))
+      console.log('filter', filter)
+      setTimeOffs(filter)
+      const typeFilter = types.find((type) => type.id === Number(key))
+      setSelectedTypeName(typeFilter.name)
     }
-  };
+  }
 
   const filterProps = {
     items: filters,
     onClick: (value) => {
-      eventHandlers.handleFilterChange(value.key);
-    },
-  };
+      eventHandlers.handleFilterChange(value.key)
+    }
+  }
 
   const columns = [
     {
-      title: "",
-      dataIndex: "id",
-      width: "50px",
-      sorter: (a, b) => a.id - b.id,
+      title: '',
+      dataIndex: 'id',
+      width: '50px',
+      sorter: (a, b) => a.id - b.id
     },
     {
-      title: "Employee",
-      dataIndex: "name",
+      title: 'Employee',
+      dataIndex: 'name'
     },
     {
-      title: "Type",
-      dataIndex: "type",
-      align: "center",
+      title: 'Type',
+      dataIndex: 'type',
+      align: 'center'
     },
     {
-      title: "Start date",
-      dataIndex: "startDate",
-      width: "10%",
-      align: "center",
-      sorter: (a, b) => a.joinDate - b.joinDate,
+      title: 'Start date',
+      dataIndex: 'startDate',
+      width: '10%',
+      align: 'center',
+      sorter: (a, b) => a.joinDate - b.joinDate
     },
     {
-      title: "End date",
-      dataIndex: "endDate",
-      align: "center",
+      title: 'End date',
+      dataIndex: 'endDate',
+      align: 'center'
     },
     {
-      title: "Status",
-      dataIndex: "status",
-      align: "center",
+      title: 'Status',
+      dataIndex: 'status',
+      align: 'center'
     },
     {
-      dataIndex: "actions",
-      fixed: "right",
-      align: "center",
-      width: "100px",
-    },
-  ];
+      dataIndex: 'actions',
+      fixed: 'right',
+      align: 'center',
+      width: '100px'
+    }
+  ]
 
   const timeoffRows = timeoffs?.map((timeoff, key) => {
     return {
@@ -372,10 +371,10 @@ const TimeOffsPage = () => {
       name: (
         <div className="flex gap-4 items-center">
           <Avatar letter="D" size="large">
-            <p className="text-lg">{timeoff.employe.name[0]}</p>
+            <p className="text-lg">{timeoff.employee.name[0]}</p>
           </Avatar>
           <div className="flex flex-col">
-            <Text>{timeoff.employe.name}</Text>
+            <Text>{timeoff.employee.name}</Text>
           </div>
         </div>
       ),
@@ -384,26 +383,27 @@ const TimeOffsPage = () => {
           {timeoff.type.name}
         </Tag>
       ),
-      startDate: dayjs(timeoff.start_date).format("MMM, DD YYYY"),
+      startDate: dayjs(timeoff.start_date).format('MMM, DD YYYY'),
       endDate: timeoff.end_date
-        ? dayjs(timeoff.end_date).format("MMM, DD YYYY")
-        : "No date",
+        ? dayjs(timeoff.end_date).format('MMM, DD YYYY')
+        : 'No date',
       status: (
         <Tag
           bordered={false}
           color={timeoff.status}
           icon={
             <>
-              {timeoff.status == "success" && <CheckCircleOutlined />}
-              {timeoff.status == "processing" && <SyncOutlined />}
-              {timeoff.status == "error" && <CloseCircleOutlined />}
+              {timeoff.status === 'success' && <CheckCircleOutlined />}
+              {timeoff.status === 'processing' && <SyncOutlined />}
+              {timeoff.status === 'error' && <CloseCircleOutlined />}
             </>
           }
         >
           {timeoff.status}
         </Tag>
       ),
-      actions: timeoff.is_deleted ? (
+      actions: timeoff.is_deleted
+        ? (
         <Popconfirm
           title={`Restore ${timeoff.name}`}
           description="Are you sure you want to restore this timeoff?"
@@ -419,7 +419,8 @@ const TimeOffsPage = () => {
             className="text-green-500 flex items-center justify-center"
           />
         </Popconfirm>
-      ) : (
+          )
+        : (
         <div className="flex justify-center">
           <Button
             type="text"
@@ -433,8 +434,8 @@ const TimeOffsPage = () => {
             icon={<MdEdit title="Edit timeoff" />}
             className="text-green-500 flex items-center justify-center"
             onClick={() => {
-              eventHandlers.handleEditTimeOff(timeoff);
-              setAction(timeoffAction.edit);
+              eventHandlers.handleEditTimeOff(timeoff)
+              setAction(timeoffAction.edit)
             }}
             disabled={timeoff.is_deleted}
           />
@@ -455,16 +456,16 @@ const TimeOffsPage = () => {
             />
           </Popconfirm>
         </div>
-      ),
-    };
-  });
+          )
+    }
+  })
 
   return (
     <>
       <div className="mb-4 flex gap-4">
         <Card
           cardTitle="Total timeoffs"
-          filterItems={() => handleFilterCard("all")}
+          filterItems={() => handleFilterCard('all')}
         >
           <div className="grid gap-2">
             <FaUsers className="text-5xl text-blue-500 bg-blue-500/10 p-2.5 rounded-xl" />
@@ -474,7 +475,7 @@ const TimeOffsPage = () => {
 
         <Card
           cardTitle="Total success"
-          filterItems={() => handleFilterCard("success")}
+          filterItems={() => handleFilterCard('success')}
         >
           <div className="grid gap-2">
             <MdCheck className="text-5xl text-green-500 bg-green-500/10 p-3 rounded-xl" />
@@ -484,7 +485,7 @@ const TimeOffsPage = () => {
 
         <Card
           cardTitle="Total processing"
-          filterItems={() => handleFilterCard("processing")}
+          filterItems={() => handleFilterCard('processing')}
         >
           <div className="grid gap-2">
             <PiArrowsClockwise className="text-5xl text-blue-500 bg-blue-500/10 p-2.5 rounded-xl" />
@@ -494,7 +495,7 @@ const TimeOffsPage = () => {
 
         <Card
           cardTitle="Total reject"
-          filterItems={() => handleFilterCard("reject")}
+          filterItems={() => handleFilterCard('reject')}
         >
           <div className="grid gap-2">
             <MdClose className="text-5xl text-red-500 bg-red-500/10 p-2.5 rounded-xl" />
@@ -507,8 +508,8 @@ const TimeOffsPage = () => {
         <Button
           className="mb-4"
           onClick={() => {
-            eventHandlers.handleOpenModal();
-            setAction(timeoffAction.add);
+            eventHandlers.handleOpenModal()
+            setAction(timeoffAction.add)
           }}
         >
           Add timeoff
@@ -528,7 +529,7 @@ const TimeOffsPage = () => {
       <Table
         columns={columns}
         data={timeoffRows}
-        locale={{ emptyText: "No timeoffs" }}
+        locale={{ emptyText: 'No timeoffs' }}
       />
       <Drawer
         title="View timeoff"
@@ -563,7 +564,7 @@ const TimeOffsPage = () => {
       />
       {contextHolder}
     </>
-  );
-};
+  )
+}
 
-export default TimeOffsPage;
+export default TimeOffsPage

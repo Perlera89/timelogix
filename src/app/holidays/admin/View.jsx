@@ -1,11 +1,8 @@
-import React from "react";
-import { Tag, Typography } from "antd";
-import dayjs from "dayjs";
+import React from 'react'
+import { Tag, Typography } from 'antd'
+import dayjs from 'dayjs'
 
-// components
-import Avatar from "@/components/common/Avatar";
-
-const { Text, Title } = Typography;
+const { Text, Title } = Typography
 
 const ViewHoliday = ({ holiday }) => {
   return (
@@ -22,19 +19,19 @@ const ViewHoliday = ({ holiday }) => {
       <div className="flex gap-4 my-4">
         <Text>Start date:</Text>
         <Text type="secondary">
-          {dayjs(holiday.start_date).format("MMM, DD YYYY")}
+          {dayjs(holiday.start_date).format('MMM, DD YYYY')}
         </Text>
       </div>
       <div className="flex gap-4 my-4">
         <Text>End date:</Text>
         <Text type="secondary">
           {holiday.end_date
-            ? dayjs(holiday.end_date).format("MMM, DD YYYY")
-            : "No date"}
+            ? dayjs(holiday.end_date).format('MMM, DD YYYY')
+            : 'No date'}
         </Text>
       </div>
     </>
-  );
-};
+  )
+}
 
-export default ViewHoliday;
+export default ViewHoliday

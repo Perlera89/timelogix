@@ -1,162 +1,162 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { GROUPS_ROUTE } from "@/utils/apiRoutes";
-import { message } from "antd";
+import React, { useState, useEffect } from 'react'
+import axios from 'axios'
+import { GROUPS_ROUTE } from '@/utils/apiRoutes'
+import { message } from 'antd'
 
 //   components
-import InputText from "@/components/entry/InputText";
-import SelectGroup from "@/components/entry/SelectCustom";
-import Textarea from "@/components/entry/Textarea";
-import Badge from "@/components/common/Badge";
-import Result from "@/components/common/Result";
+import InputText from '@/components/entry/InputText'
+import SelectGroup from '@/components/entry/SelectCustom'
+import Textarea from '@/components/entry/Textarea'
+import Badge from '@/components/common/Badge'
+import Result from '@/components/common/Result'
 
 const AdminEmployee = ({
   action,
   employee,
   handleEmployee,
   updateValidation,
-  handleCancel,
+  handleCancel
 }) => {
   // states
-  const [groups, setGroups] = useState([]);
-  const [group, setGroup] = useState(null);
-  const [groupsUpdate, setGroupsUpdate] = useState(false);
-  const [groupName, setGroupName] = useState(null);
-  const [name, setName] = useState(null);
-  const [selectedColor, setSelectedColor] = useState("#606060");
-  const [note, setNote] = useState(null);
-  const [error, setError] = useState("");
-  const [openResult, setOpenResult] = useState(false);
-  const [messageApi, contextHolder] = message.useMessage();
+  const [groups, setGroups] = useState([])
+  const [group, setGroup] = useState(null)
+  const [groupsUpdate, setGroupsUpdate] = useState(false)
+  const [groupName, setGroupName] = useState(null)
+  const [name, setName] = useState(null)
+  const [selectedColor, setSelectedColor] = useState('#606060')
+  const [note, setNote] = useState(null)
+  const [error, setError] = useState('')
+  const [openResult, setOpenResult] = useState(false)
+  const [messageApi, contextHolder] = message.useMessage()
 
   // handlers
   const eventHandlers = {
     handleNameChange: (event) => {
-      setName(event.target.value);
+      setName(event.target.value)
 
       handleEmployee((prevData) => ({
         ...prevData,
-        name: event.target.value,
-      }));
+        name: event.target.value
+      }))
     },
     handleGroupSelect: (value) => {
-      setGroup(value);
+      setGroup(value)
       handleEmployee((prevData) => ({
         ...prevData,
-        group_id: value,
-      }));
+        group_id: value
+      }))
     },
     handleGroupNameChange: (event) => {
-      setGroupName(event.target.value);
+      setGroupName(event.target.value)
     },
     handleNoteChange: (event) => {
-      setNote(event.target.value);
+      setNote(event.target.value)
       handleEmployee((prevData) => ({
         ...prevData,
-        note: event.target.value,
-      }));
+        note: event.target.value
+      }))
     },
 
     handleColorChange: (color) => {
-      setSelectedColor(color.toHexString());
+      setSelectedColor(color.toHexString())
     },
 
     handleAddGroup: async (name) => {
-      const existingGroups = groups.map((group) => group.label);
+      const existingGroups = groups.map((group) => group.label)
 
       if (existingGroups.includes(name)) {
-        isExistsMessage(name);
+        isExistsMessage(name)
       } else {
         const group = {
           name,
-          color: selectedColor,
-        };
+          color: selectedColor
+        }
         await axios
           .post(GROUPS_ROUTE, group)
           .then((res) => {
-            console.log(res);
-            setGroupsUpdate(true);
-            setGroupName(null);
+            console.log(res)
+            setGroupsUpdate(true)
+            setGroupName(null)
           })
           .catch((error) => {
-            handleOpenResult();
-            setError(error);
-          });
+            eventHandlers.handleOpenResult()
+            setError(error)
+          })
       }
     },
     handleOpenResult: () => {
-      setOpenResult(true);
+      setOpenResult(true)
     },
     handleCloseResult: () => {
-      setOpenResult(false);
-    },
-  };
+      setOpenResult(false)
+    }
+  }
 
   const isExistsMessage = (name) => {
     messageApi.open({
-      type: "warning",
+      type: 'warning',
       content: `${name} already exists`,
-      duration: 5,
-    });
-  };
+      duration: 5
+    })
+  }
 
   // validations
   const validations = {
     name: (value) => !!value && value.length >= 3,
-    group: (value) => !!value,
-  };
+    group: (value) => !!value
+  }
 
   const [validation, setValidation] = useState({
     name: false,
-    group: false,
-  });
+    group: false
+  })
 
   // Actualizar el estado de validación
   useEffect(() => {
     setValidation({
       name: validations.name(name),
-      group: validations.group(group),
-    });
-  }, [name, group]);
+      group: validations.group(group)
+    })
+  }, [name, group])
 
   // Verificar los campos
   useEffect(() => {
-    const areAllFieldsValid = Object.values(validation).every(Boolean);
-    updateValidation(areAllFieldsValid);
-  }, [validation]);
+    const areAllFieldsValid = Object.values(validation).every(Boolean)
+    updateValidation(areAllFieldsValid)
+  }, [validation])
 
   const resetForm = () => {
-    setName(null);
-    setGroup(null);
-    setNote(null);
-  };
+    setName(null)
+    setGroup(null)
+    setNote(null)
+  }
 
   useEffect(() => {
-    resetForm();
-  }, [handleCancel]);
+    resetForm()
+  }, [handleCancel])
 
   // fetch data
   useEffect(() => {
-    setGroupsUpdate(false);
-    if (action == "edit") {
-      setName(employee.name);
-      setGroup(employee.group.id);
-      setNote(employee.note);
+    setGroupsUpdate(false)
+    if (action === 'edit') {
+      setName(employee.name)
+      setGroup(employee.group.id)
+      setNote(employee.note)
     }
 
     const fetchGroups = async () => {
-      const groups = await axios.get(GROUPS_ROUTE);
-      const groupsData = groups.data;
+      const groups = await axios.get(GROUPS_ROUTE)
+      const groupsData = groups.data
       setGroups(
         groupsData.map((group) => ({
           value: group.id,
-          label: group.name,
+          label: group.name
         }))
-      );
-    };
+      )
+    }
 
-    fetchGroups();
-  }, [action, employee, groupsUpdate]);
+    fetchGroups()
+  }, [action, employee, groupsUpdate])
   return (
     <>
       <div className="flex flex-col gap-2 mt-4">
@@ -199,7 +199,7 @@ const AdminEmployee = ({
       />
       {contextHolder}
     </>
-  );
-};
+  )
+}
 
-export default AdminEmployee;
+export default AdminEmployee
