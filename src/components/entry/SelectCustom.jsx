@@ -1,11 +1,11 @@
-import React, { useRef, useState } from "react";
-import { PlusOutlined } from "@ant-design/icons";
-import { Divider, Input, Select, Space, Button, Typography } from "antd";
+import React, { useRef, useState } from 'react'
+import { PlusOutlined } from '@ant-design/icons'
+import { Divider, Input, Select, Space, Button, Typography } from 'antd'
 
-import ColorPicker from "./ColorPicker";
-import { MdClose } from "react-icons/md";
+import ColorPicker from './ColorPicker'
+import { MdClose } from 'react-icons/md'
 
-const { Text } = Typography;
+const { Text } = Typography
 
 const App = ({
   placeholder,
@@ -17,13 +17,13 @@ const App = ({
   items,
   handleAdd,
   seletedColor,
-  handleColorChange,
+  handleColorChange
 }) => {
-  const inputRef = useRef(null);
-  const [showCloseButton, setShowCloseButton] = useState(false);
-  const [open, setOpen] = useState(false); // Estado para controlar la apertura y cierre del Select
+  const inputRef = useRef(null)
+  const [showCloseButton, setShowCloseButton] = useState(false)
+  const [open, setOpen] = useState(false) // Estado para controlar la apertura y cierre del Select
   const filterOption = (input, option) =>
-    (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
+    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
 
   return (
     <Select
@@ -32,16 +32,16 @@ const App = ({
       value={value}
       filterOption={filterOption}
       onFocus={() => {
-        setOpen(true);
-        setShowCloseButton(true);
+        setOpen(true)
+        setShowCloseButton(true)
       }}
       onSelect={(value) => {
-        handleSelect(value);
-        setOpen(false);
+        handleSelect(value)
+        setOpen(false)
       }}
       placeholder={placeholder}
       getPopupContainer={() =>
-        document.getElementById("color-picker-container")
+        document.getElementById('color-picker-container')
       }
       notFoundContent={
         <Text className="flex justify-center my-2" type="secondary">
@@ -57,8 +57,8 @@ const App = ({
                 className="mb-2 flex justify-center items-center"
                 icon={<MdClose />}
                 onClick={() => {
-                  setOpen(false);
-                  setShowCloseButton(false);
+                  setOpen(false)
+                  setShowCloseButton(false)
                 }}
               />
             </div>
@@ -93,7 +93,7 @@ const App = ({
       options={items}
       open={open} // Usar el estado local para controlar la apertura y cierre del Select
     />
-  );
-};
+  )
+}
 
-export default App;
+export default App

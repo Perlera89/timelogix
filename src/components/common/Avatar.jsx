@@ -1,8 +1,6 @@
-import { UserOutlined } from "@ant-design/icons";
-import React from "react";
-import { Avatar } from "antd";
-const url =
-  "https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg";
+import React from 'react'
+import { Avatar } from 'antd'
+
 const App = ({ size, style, children }) => {
   return (
     <Avatar
@@ -12,6 +10,6 @@ const App = ({ size, style, children }) => {
     >
       {children}
     </Avatar>
-  );
-};
-export default App;
+  )
+}
+export default App

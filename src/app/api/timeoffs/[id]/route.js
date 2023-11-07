@@ -5,24 +5,27 @@ const prisma = new PrismaClient()
 
 export async function PUT (restTimeOff, { params }) {
   try {
-    const { startDate, endDate, status, type, note, employeId } =
-    await restTimeOff.json()
+    const timeoffData = await restTimeOff.json()
 
     const timeOff = await prisma.timeOff.update({
+      where: { id: Number(params.id) },
       data: {
-        start_date: startDate,
-        end_date: endDate,
-        status,
-        note,
-        type,
+        start_date: timeoffData.start_date,
+        end_date: timeoffData.end_date,
+        status: timeoffData.status,
+        note: timeoffData.note,
+        type: {
+          connect: {
+            id: Number(timeoffData.type_id)
+          }
+        },
         employe: {
           connect: {
-            id: employeId
+            id: timeoffData.employe_id
           }
         },
         is_deleted: false
-      },
-      where: { id: Number(params.id) }
+      }
     })
     return NextResponse.json(timeOff)
   } catch (error) {

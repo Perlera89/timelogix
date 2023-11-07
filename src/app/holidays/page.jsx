@@ -362,9 +362,9 @@ const HolidaysPage = () => {
           {holiday.type.name}
         </Tag>
       ),
-      startDate: dayjs(holiday.start_date).format('MMM, DD YYYY'),
+      startDate: dayjs(holiday.start_date).add(1, 'day').format('MMM, DD YYYY'),
       endDate: holiday.end_date
-        ? dayjs(holiday.end_date).format('MMM, DD YYYY')
+        ? dayjs(holiday.end_date).day(1, 'day').format('MMM, DD YYYY')
         : 'No date',
       actions: holiday.is_deleted
         ? (

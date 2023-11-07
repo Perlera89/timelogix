@@ -16,19 +16,22 @@ export async function GET () {
 }
 
 export async function POST (restTimeOff) {
-  const { startDate, endDate, status, type, note, employeId } =
-    await restTimeOff.json()
+  const timeoffData = await restTimeOff.json()
 
   const timeOff = await prisma.timeOff.create({
     data: {
-      start_date: startDate,
-      end_date: endDate,
-      status,
-      note,
-      type,
+      start_date: timeoffData.start_date,
+      end_date: timeoffData.end_date,
+      status: timeoffData.status,
+      note: timeoffData.note,
+      type: {
+        connect: {
+          id: timeoffData.type_id
+        }
+      },
       employee: {
         connect: {
-          id: employeId
+          id: timeoffData.employee_id
         }
       },
       is_deleted: false

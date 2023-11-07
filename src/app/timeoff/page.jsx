@@ -1,8 +1,16 @@
 'use client'
-import { Button, Tag, Popconfirm, Typography, message } from 'antd'
+import { Suspense, useEffect, useState } from 'react'
+import {
+  Button,
+  Tag,
+  Popconfirm,
+  Typography,
+  message,
+  DatePicker,
+  Skeleton
+} from 'antd'
 import axios from 'axios'
 import dayjs from 'dayjs'
-import { useEffect, useState } from 'react'
 
 // components
 import Table from '@/components/common/Table'
@@ -13,11 +21,10 @@ import Avatar from '@/components/common/Avatar'
 import Modal from '@/components/Modal'
 import Drawer from '@/components/common/DrawerItem'
 import Result from '@/components/common/Result'
-
 import AdminTimeOff from './admin/Update'
 import ViewTimeOff from './admin/View'
 
-// icon
+// icons
 import { FaUsers } from 'react-icons/fa'
 import { PiArrowsClockwise } from 'react-icons/pi'
 import {
@@ -64,7 +71,9 @@ const TimeOffsPage = () => {
   const [clearModal, setClearModal] = useState(false)
   const [error, setError] = useState('')
   const [openResult, setOpenResult] = useState(false)
-
+  const [dateFilterName, setDateFilterName] = useState('Today')
+  const [dateFilter, setDateFilter] = useState('today')
+  const [date, setDate] = useState(null)
   const [messageApi, contextHolder] = message.useMessage()
 
   // fetch data
@@ -82,26 +91,9 @@ const TimeOffsPage = () => {
         setTimeOffs(timeoffsData)
         setTimeOffsCount(timeoffsData.length)
 
-        const successCount = timeoffsData.filter(
-          (timeoff) => timeoff.status === 'success'
-        ).length
-        const processCount = timeoffsData.filter(
-          (timeoff) => timeoff.status === 'processing'
-        ).length
-        const rejectCount = timeoffsData.filter(
-          (timeoff) => timeoff.status === 'reject'
-        ).length
-
-        // Actualizar los contadores
-        setSuccessCount(successCount)
-        setProcessCount(processCount)
-        setRejectCount(rejectCount)
-
-        const deletedTimeOffsData = response.data.filter(
-          (timeoff) => timeoff.is_deleted
+        setDeletedTimeOffs(
+          response.data.filter((timeoff) => timeoff.is_deleted)
         )
-        console.log('deletedTimeOffs', deletedTimeOffsData)
-        setDeletedTimeOffs(deletedTimeOffsData)
 
         setAllTimeOffs(timeoffsData)
       })
@@ -124,10 +116,39 @@ const TimeOffsPage = () => {
       })
   }
 
+  //! effects
+
   useEffect(() => {
     fetchTimeOffs()
     fetchTypes()
+
+    setSelectedTypeName('All')
+
+    if (selectedType === 'all') {
+      setTimeOffs(allTimeOffs)
+    } else {
+      setTimeOffs(
+        timeoffs.filter((timeoff) => timeoff.type.id === selectedType)
+      )
+    }
+    filterTimeOffsByDate(dateFilter)
   }, [timeoffsUpdate, timeoff])
+
+  useEffect(() => {
+    const successCount = allTimeOffs.filter(
+      (timeoff) => timeoff.status === 'success'
+    ).length
+    const processCount = allTimeOffs.filter(
+      (timeoff) => timeoff.status === 'processing'
+    ).length
+    const rejectCount = allTimeOffs.filter(
+      (timeoff) => timeoff.status === 'reject'
+    ).length
+
+    setSuccessCount(successCount)
+    setProcessCount(processCount)
+    setRejectCount(rejectCount)
+  }, [timeoffs])
 
   const handleFilterCard = (value) => {
     const filterMap = {
@@ -139,15 +160,12 @@ const TimeOffsPage = () => {
 
     const filterFunction = filterMap[value] || (() => false)
 
-    const filteredTimeOffs = timeoffs.filter(filterFunction)
+    const filteredTimeOffs = allTimeOffs.filter(filterFunction)
     setTimeOffs(filteredTimeOffs)
   }
 
-  // handlers
+  //! handlers
   const eventHandlers = {
-    handleTimeOffChange: (data) => {
-      setTimeOff(data)
-    },
     handleOpenTimeOff: (timeoff) => {
       console.log('timeoff', timeoff)
       setTimeOff(timeoff)
@@ -238,6 +256,14 @@ const TimeOffsPage = () => {
     handleFilterChange: (value) => {
       setSelectedType(value)
       filterTimeOffs(value)
+    },
+    handleDateFilterChange: (value) => {
+      setDateFilter(value)
+      filterTimeOffsByDate(value)
+    },
+    handleDateChange: (value) => {
+      setDate(value)
+      handleDateFilterChange(value)
     }
   }
 
@@ -298,6 +324,63 @@ const TimeOffsPage = () => {
     }
   ]
 
+  const dateFilters = [
+    { label: 'Today', key: 'today' },
+    { label: 'Yesterday', key: 'yesterday' },
+    { label: 'Last 7 days', key: 'last7days' },
+    { label: 'Last month', key: 'lastMonth' },
+    { label: 'This year', key: 'thisYear' }
+  ]
+
+  const filterTimeOffsByDate = (dateFilter) => {
+    console.log('dateFilter', dateFilter)
+    const today = dayjs().startOf('day')
+
+    const dateFilters = {
+      today: (timeoff) =>
+        dayjs(timeoff.start_date).startOf('day').isSame(today, 'day'),
+      yesterday: (timeoff) =>
+        dayjs(timeoff.start_date)
+          .startOf('day')
+          .isSame(today.subtract(1, 'day'), 'day'),
+      last7days: (timeoff) =>
+        dayjs(timeoff.start_date).isAfter(today.subtract(7, 'day')),
+      lastMonth: (timeoff) =>
+        dayjs(timeoff.start_date)
+          .startOf('day')
+          .isSame(today.subtract(1, 'month'), 'month'),
+      thisYear: (timeoff) =>
+        dayjs(timeoff.start_date).startOf('day').isSame(today, 'year')
+    }
+
+    const dateFilterNames = {
+      today: 'Today',
+      yesterday: 'Yesterday',
+      last7days: 'Last 7 days',
+      lastMonth: 'Last month',
+      thisYear: 'This year'
+    }
+
+    let filteredTimeOffs = timeoffs
+    if (dateFilters[dateFilter]) {
+      filteredTimeOffs = allTimeOffs.filter(dateFilters[dateFilter])
+    }
+
+    console.log('filteredTimeOffs', filteredTimeOffs)
+    setTimeOffs(filteredTimeOffs)
+    setDateFilterName(dateFilterNames[dateFilter])
+  }
+
+  const handleDateFilterChange = (selectedDay) => {
+    // const day = dayjs(selectedDay.format('YYYY-MM-DDTHH:mm:ssZ'))
+    console.log('day', selectedDay.format('YYYY-MM-DDTHH:mm:ssZ'))
+    const timeoffsFiltered = allTimeOffs.filter((timeoff) =>
+      dayjs(timeoff.start_date).isSame(selectedDay, 'day')
+    )
+
+    setTimeOffs(timeoffsFiltered)
+  }
+
   const filterTimeOffs = (key) => {
     if (key === 'all') {
       setTimeOffsUpdate(true)
@@ -308,7 +391,9 @@ const TimeOffsPage = () => {
       setSelectedTypeName('Deleted')
     } else {
       console.log('timeoffs', timeoffs)
-      const filter = allTimeOffs.filter((timeoff) => timeoff.type_id === Number(key))
+      const filter = allTimeOffs.filter(
+        (timeoff) => timeoff.type_id === Number(key)
+      )
       console.log('filter', filter)
       setTimeOffs(filter)
       const typeFilter = types.find((type) => type.id === Number(key))
@@ -320,6 +405,13 @@ const TimeOffsPage = () => {
     items: filters,
     onClick: (value) => {
       eventHandlers.handleFilterChange(value.key)
+    }
+  }
+
+  const dateFiltersProps = {
+    items: dateFilters,
+    onClick: (value) => {
+      eventHandlers.handleDateFilterChange(value.key)
     }
   }
 
@@ -390,12 +482,12 @@ const TimeOffsPage = () => {
       status: (
         <Tag
           bordered={false}
-          color={timeoff.status}
+          color={`${timeoff.status === 'reject' ? 'red' : timeoff.status}`}
           icon={
             <>
               {timeoff.status === 'success' && <CheckCircleOutlined />}
               {timeoff.status === 'processing' && <SyncOutlined />}
-              {timeoff.status === 'error' && <CloseCircleOutlined />}
+              {timeoff.status === 'reject' && <CloseCircleOutlined />}
             </>
           }
         >
@@ -521,16 +613,24 @@ const TimeOffsPage = () => {
             update={setTimeOffsUpdate}
             onSearch={eventHandlers.handleSearchChange}
           />
-          <div className="flex justify-end">
-            <Dropdown title={selectedTypeName} filters={filterProps}></Dropdown>
+          <div className="flex justify-end gap-2">
+            <DatePicker
+              value={date}
+              onChange={eventHandlers.handleDateChange}
+              inputReadOnly
+            />
+            <Dropdown title={dateFilterName} filters={dateFiltersProps} />
+            <Dropdown title={selectedTypeName} filters={filterProps} />
           </div>
         </div>
       </div>
-      <Table
-        columns={columns}
-        data={timeoffRows}
-        locale={{ emptyText: 'No timeoffs' }}
-      />
+      <Suspense fallback={<Skeleton />}>
+        <Table
+          columns={columns}
+          data={timeoffRows}
+          locale={{ emptyText: 'No timeoffs' }}
+        />
+      </Suspense>
       <Drawer
         title="View timeoff"
         placement="right"
@@ -540,7 +640,7 @@ const TimeOffsPage = () => {
         <ViewTimeOff timeoff={timeoff} />
       </Drawer>
       <Modal
-        title="Add TimeOff"
+        title="Add Timeoff"
         width={500}
         isModalOpen={openModal}
         handleCancel={eventHandlers.handleCloseModal}
@@ -550,7 +650,7 @@ const TimeOffsPage = () => {
         <AdminTimeOff
           action={action}
           timeoff={timeoff}
-          handleTimeOff={eventHandlers.handleTimeOffChange}
+          setTimeoff={setTimeOff}
           updateValidation={eventHandlers.handleTimeOffValidation}
           handleCancel={clearModal}
         />

@@ -1,31 +1,31 @@
-import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { NextResponse } from 'next/server'
+import { PrismaClient } from '@prisma/client'
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient()
 
-export async function GET() {
-  let typeTimeoff = await prisma.type_TimeOff.findMany({
+export async function GET () {
+  const typeTimeoff = await prisma.type_TimeOff.findMany({
     where: {
-      is_deleted: false,
-    },
-  });
+      is_deleted: false
+    }
+  })
 
-  await prisma.$disconnect();
+  await prisma.$disconnect()
 
-  return NextResponse.json(typeTimeoff);
+  return NextResponse.json(typeTimeoff)
 }
 
-export async function POST(restTypeTimeoff) {
-  const typeTimeoffData = await restTypeTimeoff.json();
+export async function POST (restTypeTimeoff) {
+  const typeTimeoffData = await restTypeTimeoff.json()
 
-  let typeTimeOff = await prisma.type_Holiday.create({
+  const typeTimeOff = await prisma.type_TimeOff.create({
     data: {
-      name: typeTimeoffData.name,    
+      name: typeTimeoffData.name,
       color: typeTimeoffData.color,
-      is_deleted: false,
-    },
-  });
+      is_deleted: false
+    }
+  })
 
-  await prisma.$disconnect();
-  return NextResponse.json(typeTimeOff);
+  await prisma.$disconnect()
+  return NextResponse.json(typeTimeOff)
 }
