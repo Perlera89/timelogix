@@ -14,8 +14,8 @@ import Modal from '@/components/Modal'
 import Drawer from '@/components/common/DrawerItem'
 import Result from '@/components/common/Result'
 
-import AdminEmployee from './admin/Update'
-import ViewEmployee from './admin/View'
+import FormPage from './admin/Form'
+import ViewPage from './admin/View'
 
 // icon
 import { FaUsers, FaLayerGroup } from 'react-icons/fa'
@@ -31,11 +31,6 @@ import { EMPLOYEES_ROUTE, GROUPS_ROUTE } from '@/utils/apiRoutes'
 const { Text } = Typography
 
 const EmployeesPage = () => {
-  const employeeAction = {
-    add: 'add',
-    edit: 'edit'
-  }
-
   // states
   const [employee, setEmployee] = useState({})
   const [allEmployees, setAllEmployees] = useState([])
@@ -49,10 +44,11 @@ const EmployeesPage = () => {
   const [openModal, setOpenModal] = useState(false)
   const [selectedGroup, setSelectedGroup] = useState('all')
   const [selectedGroupName, setSelectedGroupName] = useState('All')
-  const [action, setAction] = useState(employeeAction.add)
+  const [action, setAction] = useState('add')
   const [isEmployeeValidated, setIsEmployeeValidated] = useState(false)
   const [clearModal, setClearModal] = useState(false)
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
   const [openResult, setOpenResult] = useState(false)
 
   const [messageApi, contextHolder] = message.useMessage()
@@ -60,42 +56,39 @@ const EmployeesPage = () => {
   // fetch data
   // -- employee
   const fetchEmployees = async () => {
-    console.log('employee', employee)
     setEmployeesUpdate(false)
-    await axios
-      .get(EMPLOYEES_ROUTE)
-      .then((response) => {
-        const employeesData = response.data.filter(
-          (employee) => employee.is_deleted === false
-        )
-        setEmployees(employeesData)
-        setEmployeesCount(employeesData.length)
+    try {
+      const response = await axios.get(EMPLOYEES_ROUTE)
+      console.log('response', response)
+      const employeesData = response.data.filter(
+        (employee) => employee.is_deleted === false
+      )
+      setEmployees(employeesData)
+      setEmployeesCount(employeesData.length)
 
-        const deletedEmployeesData = response.data.filter(
-          (employee) => employee.is_deleted
-        )
-        setDeletedEmployees(deletedEmployeesData)
+      const deletedEmployeesData = response.data.filter(
+        (employee) => employee.is_deleted
+      )
+      setDeletedEmployees(deletedEmployeesData)
 
-        setAllEmployees(employeesData)
-      })
-      .catch((error) => {
-        eventHandlers.handleOpenResult()
-        setError(error)
-      })
+      setAllEmployees(employeesData)
+      setLoading(false)
+    } catch (error) {
+      eventHandlers.handleOpenResult()
+      setError(error)
+    }
   }
 
   // -- groups
   const fetchGroups = async () => {
-    await axios
-      .get(GROUPS_ROUTE)
-      .then((response) => {
-        setGroupsCount(response.data.length)
-        setGroups(response.data)
-      })
-      .catch((error) => {
-        eventHandlers.handleOpenResult()
-        setError(error)
-      })
+    try {
+      const response = await axios.get(GROUPS_ROUTE)
+      setGroupsCount(response.data.length)
+      setGroups(response.data)
+    } catch (error) {
+      eventHandlers.handleOpenResult()
+      setError(error)
+    }
   }
 
   useEffect(() => {
@@ -110,15 +103,14 @@ const EmployeesPage = () => {
         employees.filter((employee) => employee.group.id === selectedGroup)
       )
     }
-  }, [employeesUpdate, employee])
+  }, [employeesUpdate])
 
   // handlers
   const eventHandlers = {
-    handleEmployeeChange: (data) => {
+    handleSetEmployee: (data) => {
       setEmployee(data)
     },
     handleOpenEmployee: (employee) => {
-      console.log('employee', employee)
       setEmployee(employee)
       setOpenEmployee(true)
     },
@@ -150,7 +142,7 @@ const EmployeesPage = () => {
     },
     handleSaveEmployee: async () => {
       try {
-        if (action === employeeAction.add) {
+        if (action === 'add') {
           const response = await axios.post(EMPLOYEES_ROUTE, employee)
           const newEmployee = response.data
           console.log('Employee saved succesfully', newEmployee)
@@ -180,13 +172,8 @@ const EmployeesPage = () => {
         setEmployeesUpdate(true)
         messages.deletedSuccess()
       } catch (error) {
-        <Result
-          title="Deleted Failed"
-          subtitle="subtitulo"
-          text={error.message}
-          error={error}
-          status="error"
-        />
+        setError(error)
+        eventHandlers.handleOpenResult()
       }
     },
     handleRestoreEmployee: async (employee) => {
@@ -197,12 +184,8 @@ const EmployeesPage = () => {
         setEmployeesUpdate(true)
         messages.restoredSuccess(name)
       } catch (error) {
-        <Result
-          title="Restored Failed"
-          text={error.mensaje}
-          error={error}
-          status="error"
-        />
+        setError(error)
+        eventHandlers.handleOpenResult()
       }
     },
     handleFilterChange: (value) => {
@@ -393,7 +376,7 @@ const EmployeesPage = () => {
             className="text-green-500 flex items-center justify-center"
             onClick={() => {
               eventHandlers.handleEditEmployee(employee)
-              setAction(employeeAction.edit)
+              setAction('edit')
             }}
             disabled={employee.is_deleted}
           />
@@ -441,7 +424,7 @@ const EmployeesPage = () => {
           className="mb-4"
           onClick={() => {
             eventHandlers.handleOpenModal()
-            setAction(employeeAction.add)
+            setAction('add')
           }}
         >
           Add employee
@@ -463,8 +446,9 @@ const EmployeesPage = () => {
       </div>
       <Table
         columns={columns}
-        data={employeeRows}
+        data={employeeRows || []}
         locale={{ emptyText: 'No employees' }}
+        loading={loading}
       />
       <Drawer
         title="View employee"
@@ -472,7 +456,7 @@ const EmployeesPage = () => {
         isOpen={openEmployee}
         isClose={eventHandlers.handleCloseEmployee}
       >
-        <ViewEmployee employee={employee} />
+        <ViewPage employee={employee} />
       </Drawer>
       <Modal
         title="Add Employee"
@@ -482,10 +466,10 @@ const EmployeesPage = () => {
         handleSave={eventHandlers.handleSaveEmployee}
         validate={!isEmployeeValidated}
       >
-        <AdminEmployee
+        <FormPage
           action={action}
           employee={employee}
-          handleEmployee={eventHandlers.handleEmployeeChange}
+          setEmployee={eventHandlers.handleSetEmployee}
           updateValidation={eventHandlers.handleEmployeeValidation}
           handleCancel={clearModal}
         />

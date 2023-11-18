@@ -1,82 +1,82 @@
-"use client";
-import { usePathname } from "next/navigation";
+'use client'
+import { usePathname } from 'next/navigation'
 
 // components
-import React, { useState, useEffect } from "react";
-import { Layout, Button, Typography } from "antd";
-import Settings from "@/components/Settings";
-import IconButton from "@/components/button/IconButton";
-import Modal from "@/components/Modal";
-import ClockIn from "@/components/timesheet/ClockIn";
+import React, { useState, useEffect } from 'react'
+import { Layout, Button, Typography } from 'antd'
+import Settings from '@/components/Settings'
+import IconButton from '@/components/button/IconButton'
+import Modal from '@/components/Modal'
+import ClockIn from '@/components/timesheet/ClockIn'
 
 // icons
 import {
   RiArrowLeftSLine,
   RiArrowRightSLine,
   RiPlayFill,
-  RiStopFill,
-} from "react-icons/ri";
+  RiStopFill
+} from 'react-icons/ri'
 
-const { Header } = Layout;
-const { Text, Title } = Typography;
+const { Header } = Layout
+const { Text, Title } = Typography
 
 const HeaderPage = ({ handleCollapsed, collapsed }) => {
   // useStates
-  const [startClock, setStartClock] = useState(false);
-  const [time, setTime] = useState("00:00:00");
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [startClock, setStartClock] = useState(false)
+  const [time, setTime] = useState('00:00:00')
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
-  const currentPage = usePathname();
+  const currentPage = usePathname()
   const path =
-    currentPage.replace("/", "").charAt(0).toUpperCase() +
-    currentPage.replace("/", "").slice(1);
+    currentPage.replace('/', '').charAt(0).toUpperCase() +
+    currentPage.replace('/', '').slice(1)
 
   // handlers
   const handleOpenModal = () => {
-    setIsModalOpen(true);
-  };
+    setIsModalOpen(true)
+  }
 
   const handleCloseModal = () => {
-    setIsModalOpen(false);
-  };
+    setIsModalOpen(false)
+  }
 
   const handleSave = () => {
-    setStartClock(true);
-    handleCloseModal();
-  };
+    setStartClock(true)
+    handleCloseModal()
+  }
 
   const handleClock = () => {
-    setStartClock(!startClock);
-  };
+    setStartClock(!startClock)
+  }
 
   useEffect(() => {
-    let intervalId;
+    let intervalId
 
     if (startClock) {
-      let seconds = 0;
+      let seconds = 0
       intervalId = setInterval(() => {
-        seconds++;
-        const formattedTime = formatTime(seconds);
-        setTime(formattedTime);
-      }, 1000);
+        seconds++
+        const formattedTime = formatTime(seconds)
+        setTime(formattedTime)
+      }, 1000)
     }
 
     return () => {
-      clearInterval(intervalId);
-    };
-  }, [startClock]);
+      clearInterval(intervalId)
+    }
+  }, [startClock])
 
   const formatTime = (seconds) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const remainingSeconds = seconds % 60;
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
+    const remainingSeconds = seconds % 60
 
-    const formattedHours = String(hours).padStart(2, "0");
-    const formattedMinutes = String(minutes).padStart(2, "0");
-    const formattedSeconds = String(remainingSeconds).padStart(2, "0");
+    const formattedHours = String(hours).padStart(2, '0')
+    const formattedMinutes = String(minutes).padStart(2, '0')
+    const formattedSeconds = String(remainingSeconds).padStart(2, '0')
 
-    return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
-  };
+    return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`
+  }
 
   return (
     <>
@@ -84,7 +84,7 @@ const HeaderPage = ({ handleCollapsed, collapsed }) => {
         className="border-b-[1px] border-border-black"
         style={{
           padding: 0,
-          background: "#191919",
+          background: '#191919'
         }}
       >
         <div className="flex justify-between items-center gap-2">
@@ -93,17 +93,19 @@ const HeaderPage = ({ handleCollapsed, collapsed }) => {
               type="text"
               className="flex items-center justify-center"
               icon={
-                collapsed ? (
+                collapsed
+                  ? (
                   <RiArrowRightSLine className="text-2xl" title="Show menu" />
-                ) : (
+                    )
+                  : (
                   <RiArrowLeftSLine className="text-2xl" title="Hide menu" />
-                )
+                    )
               }
               onClick={handleCollapsed}
               style={{
-                fontSize: "16px",
+                fontSize: '16px',
                 width: 64,
-                height: 64,
+                height: 64
               }}
             />
             <Title
@@ -114,7 +116,8 @@ const HeaderPage = ({ handleCollapsed, collapsed }) => {
             </Title>
           </div>
           <div className="flex justify-end mr-4 gap-4">
-            {startClock ? (
+            {startClock
+              ? (
               <div className="flex items-center justify-center gap-2">
                 <p className="">{time}</p>
                 <IconButton
@@ -128,7 +131,8 @@ const HeaderPage = ({ handleCollapsed, collapsed }) => {
                   click={handleClock}
                 />
               </div>
-            ) : (
+                )
+              : (
               <IconButton
                 icon={
                   <RiPlayFill className="mx-2 text-green-500 text-2xl transition-colors animate-pulse transform scale-125 duration-1000 animate-3" />
@@ -136,7 +140,7 @@ const HeaderPage = ({ handleCollapsed, collapsed }) => {
                 size="default"
                 click={handleOpenModal}
               />
-            )}
+                )}
             <Settings title="Denis Lopez" />
           </div>
         </div>
@@ -151,7 +155,7 @@ const HeaderPage = ({ handleCollapsed, collapsed }) => {
         <ClockIn />
       </Modal>
     </>
-  );
-};
+  )
+}
 
-export default HeaderPage;
+export default HeaderPage

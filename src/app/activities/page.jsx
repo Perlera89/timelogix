@@ -1,9 +1,6 @@
-import React from 'react'
-
-const AttendancePage = () => {
-  return (
-    <div>AttendancePage</div>
-  )
+import AdminPage from './admin/Page'
+const ActivitiesPage = () => {
+  return <AdminPage />
 }
 
-export default AttendancePage
+export default ActivitiesPage

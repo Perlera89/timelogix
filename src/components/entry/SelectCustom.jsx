@@ -22,6 +22,7 @@ const App = ({
   const inputRef = useRef(null)
   const [showCloseButton, setShowCloseButton] = useState(false)
   const [open, setOpen] = useState(false) // Estado para controlar la apertura y cierre del Select
+
   const filterOption = (input, option) =>
     (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
 
@@ -68,6 +69,9 @@ const App = ({
           <Space className="py-2 px-1 flex justify-between">
             <div className="flex gap-2">
               <Input
+                allowClear
+                showCount
+                maxLength={50}
                 placeholder={placeholderInput}
                 ref={inputRef}
                 value={inputValue}

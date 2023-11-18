@@ -13,7 +13,7 @@ import Result from '@/components/common/Result'
 const AdminEmployee = ({
   action,
   employee,
-  handleEmployee,
+  setEmployee,
   updateValidation,
   handleCancel
 }) => {
@@ -31,17 +31,18 @@ const AdminEmployee = ({
 
   // handlers
   const eventHandlers = {
-    handleNameChange: (event) => {
-      setName(event.target.value)
+    handleNameChange: (value) => {
+      setName(value)
 
-      handleEmployee((prevData) => ({
+      setEmployee((prevData) => ({
         ...prevData,
-        name: event.target.value
+        name: value
       }))
     },
     handleGroupSelect: (value) => {
+      console.log('valor del grupo', value)
       setGroup(value)
-      handleEmployee((prevData) => ({
+      setEmployee((prevData) => ({
         ...prevData,
         group_id: value
       }))
@@ -51,7 +52,7 @@ const AdminEmployee = ({
     },
     handleNoteChange: (event) => {
       setNote(event.target.value)
-      handleEmployee((prevData) => ({
+      setEmployee((prevData) => ({
         ...prevData,
         note: event.target.value
       }))
@@ -137,7 +138,6 @@ const AdminEmployee = ({
 
   // fetch data
   useEffect(() => {
-    setGroupsUpdate(false)
     if (action === 'edit') {
       setName(employee.name)
       setGroup(employee.group.id)
@@ -154,9 +154,10 @@ const AdminEmployee = ({
         }))
       )
     }
+    setGroupsUpdate(false)
 
     fetchGroups()
-  }, [action, employee, groupsUpdate])
+  }, [action, groupsUpdate, employee])
   return (
     <>
       <div className="flex flex-col gap-2 mt-4">

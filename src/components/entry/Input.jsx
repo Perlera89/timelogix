@@ -2,23 +2,14 @@ import { Input } from 'antd'
 import { IoTextSharp } from 'react-icons/io5'
 
 const InputText = ({ placeholder, value, handleChange }) => {
-  const handleInputChange = (e) => {
-    const inputValue = e.target.value
-    const regex = /^[a-zA-Z\s]+$/
-
-    if (regex.test(inputValue) || inputValue === '') {
-      handleChange(inputValue)
-    }
-  }
-
   return (
     <Input
       allowClear
       showCount
-      maxLength={100}
+      maxLength={10}
       className="w-full"
       placeholder={placeholder}
-      onChange={handleInputChange}
+      onChange={handleChange}
       value={value}
       addonBefore={<IoTextSharp />}
     />

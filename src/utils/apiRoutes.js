@@ -8,3 +8,5 @@ export const TYPE_HOLIDAYS_ROUTE = `${ROOT}/type-holidays`
 
 export const TIMEOFFS_ROUTE = `${ROOT}/timeoffs`
 export const TYPE_TIMEOFFS_ROUTE = `${ROOT}/type-timeoffs`
+
+export const ACTIVITIES_ROUTE = `${ROOT}/activities`

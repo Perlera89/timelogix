@@ -21,8 +21,9 @@ import Avatar from '@/components/common/Avatar'
 import Modal from '@/components/Modal'
 import Drawer from '@/components/common/DrawerItem'
 import Result from '@/components/common/Result'
-import AdminTimeOff from './admin/Update'
-import ViewTimeOff from './admin/View'
+
+import FormPage from './admin/Form'
+import ViewPage from './admin/View'
 
 // icons
 import { FaUsers } from 'react-icons/fa'
@@ -74,17 +75,18 @@ const TimeOffsPage = () => {
   const [dateFilterName, setDateFilterName] = useState('Today')
   const [dateFilter, setDateFilter] = useState('today')
   const [date, setDate] = useState(null)
+  const [color, setColor] = useState(null)
+  const [icon, setIcon] = useState(null)
+  const [loading, setLoading] = useState(true)
   const [messageApi, contextHolder] = message.useMessage()
 
   // fetch data
   // -- timeoff
   const fetchTimeOffs = async () => {
-    console.log('timeoff', timeoff)
     setTimeOffsUpdate(false)
     await axios
       .get(TIMEOFFS_ROUTE)
       .then((response) => {
-        console.log('response.data', response.data)
         const timeoffsData = response.data.filter(
           (timeoff) => timeoff.is_deleted === false
         )
@@ -95,6 +97,7 @@ const TimeOffsPage = () => {
           response.data.filter((timeoff) => timeoff.is_deleted)
         )
 
+        setLoading(false)
         setAllTimeOffs(timeoffsData)
       })
       .catch((error) => {
@@ -132,17 +135,17 @@ const TimeOffsPage = () => {
       )
     }
     filterTimeOffsByDate(dateFilter)
-  }, [timeoffsUpdate, timeoff])
+  }, [timeoffsUpdate])
 
   useEffect(() => {
     const successCount = allTimeOffs.filter(
-      (timeoff) => timeoff.status === 'success'
+      (timeoff) => timeoff.status === 'approved'
     ).length
     const processCount = allTimeOffs.filter(
-      (timeoff) => timeoff.status === 'processing'
+      (timeoff) => timeoff.status === 'pending'
     ).length
     const rejectCount = allTimeOffs.filter(
-      (timeoff) => timeoff.status === 'reject'
+      (timeoff) => timeoff.status === 'rejected'
     ).length
 
     setSuccessCount(successCount)
@@ -153,9 +156,9 @@ const TimeOffsPage = () => {
   const handleFilterCard = (value) => {
     const filterMap = {
       all: () => true,
-      success: (timeoff) => timeoff.status === 'success',
-      processing: (timeoff) => timeoff.status === 'processing',
-      reject: (timeoff) => timeoff.status === 'reject'
+      success: (timeoff) => timeoff.status === 'approved',
+      processing: (timeoff) => timeoff.status === 'pending',
+      reject: (timeoff) => timeoff.status === 'rejected'
     }
 
     const filterFunction = filterMap[value] || (() => false)
@@ -166,9 +169,11 @@ const TimeOffsPage = () => {
 
   //! handlers
   const eventHandlers = {
-    handleOpenTimeOff: (timeoff) => {
+    handleOpenTimeOff: (timeoff, color, icon) => {
       console.log('timeoff', timeoff)
       setTimeOff(timeoff)
+      setColor(color)
+      setIcon(icon)
       setOpenTimeOff(true)
     },
     handleCloseTimeOff: () => {
@@ -200,13 +205,12 @@ const TimeOffsPage = () => {
     handleSaveTimeOff: async () => {
       try {
         if (action === timeoffAction.add) {
-          const response = await axios.post(TIMEOFFS_ROUTE, timeoff)
-          const newTimeOff = response.data
-          console.log('TimeOff saved succesfully', newTimeOff)
+          await axios.post(TIMEOFFS_ROUTE, timeoff)
           setTimeOffsUpdate(true)
           messages.addSuccess(timeoff.name)
           eventHandlers.handleCloseModal()
         } else {
+          console.log('para actu', timeoff)
           const response = await axios.put(
             `${TIMEOFFS_ROUTE}/${timeoff.id}`,
             timeoff
@@ -264,6 +268,18 @@ const TimeOffsPage = () => {
     handleDateChange: (value) => {
       setDate(value)
       handleDateFilterChange(value)
+    },
+    handleStatusChange: async (timeoff, status) => {
+      timeoff.status = status
+      await axios
+        .put(`${TIMEOFFS_ROUTE}/${timeoff.id}`, timeoff)
+        .then((res) => {
+          setTimeOffsUpdate(true)
+          console.log('res', res)
+        })
+        .catch((err) => {
+          console.log('err', err)
+        })
     }
   }
 
@@ -286,7 +302,7 @@ const TimeOffsPage = () => {
     deletedSuccess: () => {
       messageApi.open({
         type: 'success',
-        content: 'deleted successfully',
+        content: 'Deleted successfully',
         duration: 5
       })
     },
@@ -332,8 +348,22 @@ const TimeOffsPage = () => {
     { label: 'This year', key: 'thisYear' }
   ]
 
+  const statusMappings = {
+    approved: {
+      color: 'green',
+      icon: <CheckCircleOutlined />
+    },
+    pending: {
+      color: 'blue',
+      icon: <SyncOutlined />
+    },
+    rejected: {
+      color: 'red',
+      icon: <CloseCircleOutlined />
+    }
+  }
+
   const filterTimeOffsByDate = (dateFilter) => {
-    console.log('dateFilter', dateFilter)
     const today = dayjs().startOf('day')
 
     const dateFilters = {
@@ -366,7 +396,6 @@ const TimeOffsPage = () => {
       filteredTimeOffs = allTimeOffs.filter(dateFilters[dateFilter])
     }
 
-    console.log('filteredTimeOffs', filteredTimeOffs)
     setTimeOffs(filteredTimeOffs)
     setDateFilterName(dateFilterNames[dateFilter])
   }
@@ -449,6 +478,12 @@ const TimeOffsPage = () => {
       align: 'center'
     },
     {
+      dataIndex: 'acceptReject',
+      align: 'center',
+      fixed: 'right',
+      width: '100px'
+    },
+    {
       dataIndex: 'actions',
       fixed: 'right',
       align: 'center',
@@ -457,6 +492,8 @@ const TimeOffsPage = () => {
   ]
 
   const timeoffRows = timeoffs?.map((timeoff, key) => {
+    const status = timeoff.status
+    const statusMapping = statusMappings[status]
     return {
       key,
       id: timeoff.id,
@@ -482,22 +519,56 @@ const TimeOffsPage = () => {
       status: (
         <Tag
           bordered={false}
-          color={`${timeoff.status === 'reject' ? 'red' : timeoff.status}`}
-          icon={
-            <>
-              {timeoff.status === 'success' && <CheckCircleOutlined />}
-              {timeoff.status === 'processing' && <SyncOutlined />}
-              {timeoff.status === 'reject' && <CloseCircleOutlined />}
-            </>
-          }
+          color={statusMapping.color}
+          icon={statusMapping.icon}
         >
           {timeoff.status}
         </Tag>
       ),
+      acceptReject: timeoff.status === 'pending' && (
+        <div className="flex">
+          <Popconfirm
+            title="Approve Time off request"
+            description={`Are you sure you want to approve ${timeoff.employee.name}'s rquest?`}
+            onConfirm={() =>
+              eventHandlers.handleStatusChange(timeoff, 'approved')
+            }
+            okType="primary"
+            placement="topLeft"
+            okText="Si"
+            cancelText="No"
+          >
+            <Button
+              type="text"
+              icon={<CheckCircleOutlined title="Acept timeoff" />}
+              className="text-green-500 flex items-center justify-center"
+              disabled={timeoff.is_deleted}
+            />
+          </Popconfirm>
+          <Popconfirm
+            title="Reject Time off request"
+            description={`Are you sure you want to reject ${timeoff.employee.name}'s rquest?`}
+            onConfirm={() =>
+              eventHandlers.handleStatusChange(timeoff, 'rejected ')
+            }
+            okType="primary"
+            placement="topLeft"
+            okText="Si"
+            cancelText="No"
+          >
+            <Button
+              type="text"
+              icon={<CloseCircleOutlined title="Reject timeoff" />}
+              className="text-red-500 flex items-center justify-center"
+              disabled={timeoff.is_deleted}
+            />
+          </Popconfirm>
+        </div>
+      ),
       actions: timeoff.is_deleted
         ? (
         <Popconfirm
-          title={`Restore ${timeoff.name}`}
+          title={`Restore timeoff to ${timeoff.employee.name}`}
           description="Are you sure you want to restore this timeoff?"
           onConfirm={() => eventHandlers.handleRestoreTimeOff(timeoff)}
           okType="danger"
@@ -518,7 +589,13 @@ const TimeOffsPage = () => {
             type="text"
             icon={<MdRemoveRedEye title="View timeoff" />}
             className="text-blue-500 flex items-center justify-center"
-            onClick={() => eventHandlers.handleOpenTimeOff(timeoff)}
+            onClick={() =>
+              eventHandlers.handleOpenTimeOff(
+                timeoff,
+                statusMapping.color,
+                statusMapping.icon
+              )
+            }
             disabled={timeoff.is_deleted}
           />
           <Button
@@ -532,7 +609,7 @@ const TimeOffsPage = () => {
             disabled={timeoff.is_deleted}
           />
           <Popconfirm
-            title={`Delete ${timeoff.name}`}
+            title={`Delete timeoff to ${timeoff.employee.name}`}
             description="Are you sure to delete this timeoff?"
             onConfirm={() => eventHandlers.handleDeleteTimeOff(timeoff)}
             okType="danger"
@@ -566,7 +643,7 @@ const TimeOffsPage = () => {
         </Card>
 
         <Card
-          cardTitle="Total success"
+          cardTitle="Total approved"
           filterItems={() => handleFilterCard('success')}
         >
           <div className="grid gap-2">
@@ -576,7 +653,7 @@ const TimeOffsPage = () => {
         </Card>
 
         <Card
-          cardTitle="Total processing"
+          cardTitle="Total pending"
           filterItems={() => handleFilterCard('processing')}
         >
           <div className="grid gap-2">
@@ -586,7 +663,7 @@ const TimeOffsPage = () => {
         </Card>
 
         <Card
-          cardTitle="Total reject"
+          cardTitle="Total rejected"
           filterItems={() => handleFilterCard('reject')}
         >
           <div className="grid gap-2">
@@ -627,8 +704,9 @@ const TimeOffsPage = () => {
       <Suspense fallback={<Skeleton />}>
         <Table
           columns={columns}
-          data={timeoffRows}
+          data={timeoffRows || []}
           locale={{ emptyText: 'No timeoffs' }}
+          loading={loading}
         />
       </Suspense>
       <Drawer
@@ -637,7 +715,7 @@ const TimeOffsPage = () => {
         isOpen={openTimeOff}
         isClose={eventHandlers.handleCloseTimeOff}
       >
-        <ViewTimeOff timeoff={timeoff} />
+        <ViewPage timeoff={timeoff} color={color} icon={icon} />
       </Drawer>
       <Modal
         title="Add Timeoff"
@@ -647,7 +725,7 @@ const TimeOffsPage = () => {
         handleSave={eventHandlers.handleSaveTimeOff}
         validate={!isTimeOffValidated}
       >
-        <AdminTimeOff
+        <FormPage
           action={action}
           timeoff={timeoff}
           setTimeoff={setTimeOff}

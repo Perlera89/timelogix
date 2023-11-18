@@ -1,27 +1,26 @@
-"use client";
-import React, { useState } from "react";
-import { Menu, Typography, Layout } from "antd";
-import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+'use client'
+import React, { useState } from 'react'
+import { Menu, Layout } from 'antd'
+import Image from 'next/image'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 // icons
 import {
   RiTimeFill,
   RiPagesFill,
   RiCalendarFill,
-  RiSuitcase2Fill,
-} from "react-icons/ri";
-import { HiUsers } from "react-icons/hi";
-import { BsTagFill } from "react-icons/bs";
-import { GoFileDirectoryFill } from "react-icons/go";
+  RiSuitcase2Fill
+} from 'react-icons/ri'
+import { HiUsers } from 'react-icons/hi'
+import { BsTagFill } from 'react-icons/bs'
+import { GoFileDirectoryFill } from 'react-icons/go'
 
-const { Text } = Typography;
-const { Sider } = Layout;
+const { Sider } = Layout
 
 const SiderPage = ({ collapsed }) => {
-  const [selectedKey, setSelectedKey] = useState("timesheet");
-  const router = useRouter();
+  const [selectedKey, setSelectedKey] = useState('timesheet')
+  const router = useRouter()
   const getItem = (label, key, icon, children, type) => {
     return {
       key,
@@ -29,39 +28,39 @@ const SiderPage = ({ collapsed }) => {
       children,
       label,
       type,
-      onClick: () => setSelectedKey(key),
-    };
-  };
+      onClick: () => setSelectedKey(key)
+    }
+  }
 
   const items = [
     getItem(
       <Link href="/timesheet">Timesheet</Link>,
-      "timesheet",
+      'timesheet',
       <RiTimeFill />
     ),
     getItem(
       <Link href="/activities">Activities</Link>,
-      "activities",
+      'activities',
       <BsTagFill />
     ),
     getItem(
       <Link href="/projects">Projects</Link>,
-      "projects",
+      'projects',
       <GoFileDirectoryFill />
     ),
     getItem(
       <Link href="/timeoff">Time Off</Link>,
-      "timeoff",
+      'timeoff',
       <RiSuitcase2Fill />
     ),
     getItem(
       <Link href="/holidays">Holidays</Link>,
-      "holidays",
+      'holidays',
       <RiCalendarFill />
     ),
-    getItem(<Link href="/employees">Employees</Link>, "employees", <HiUsers />),
-    getItem(<Link href="/reports">Reports</Link>, "reports", <RiPagesFill />),
-  ];
+    getItem(<Link href="/employees">Employees</Link>, 'employees', <HiUsers />),
+    getItem(<Link href="/reports">Reports</Link>, 'reports', <RiPagesFill />)
+  ]
 
   return (
     <Sider
@@ -78,21 +77,21 @@ const SiderPage = ({ collapsed }) => {
           width={100}
           height={100}
           onClick={() => {
-            setSelectedKey("timesheet");
-            router.push("/");
+            setSelectedKey('timesheet')
+            router.push('/')
           }}
         />
       </div>
       <Menu
         theme="dark"
         mode="inline"
-        defaultSelectedKeys={["home"]}
+        defaultSelectedKeys={['home']}
         selectedKeys={[selectedKey]}
         className="bg-rich-black"
         items={items}
       />
     </Sider>
-  );
-};
+  )
+}
 
-export default SiderPage;
+export default SiderPage

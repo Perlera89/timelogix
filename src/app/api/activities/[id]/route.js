@@ -1,29 +1,26 @@
-import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { NextResponse } from 'next/server'
+import { PrismaClient } from '@prisma/client'
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient()
 
-export async function PUT(restActivitie, { params }) {
+export async function PUT (restActivitie, { params }) {
   try {
-    const {name, description, color, employeId } =
-    await restActivitie.json();
+    const activityData =
+    await restActivitie.json()
 
-  let activitie = await prisma.activitie.update({
-    data: {
-      name: name,
-      description: description,
-      color: color,
-      employe:{
-        connect:{
-            id:employeId
-        }
+    const activity = await prisma.activity.update({
+      data: {
+        name: activityData.name,
+        code: activityData.code,
+        description: activityData.desctription,
+        color: activityData.color,
+        is_deleted: false
       },
-      is_deleted: false,
-    },where:{ id:Number(params.id)}
-  });
-    return NextResponse.json(activitie);
+      where: { id: Number(params.id) }
+    })
+    return NextResponse.json(activity)
   } catch (error) {
-    console.log("error", error);
-    return NextResponse.json(error);
+    console.log('error', error)
+    return NextResponse.json(error)
   }
 }

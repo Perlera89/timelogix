@@ -11,18 +11,17 @@ datasource db {
 
 model Employee {
   id                Int      @id @default(autoincrement())
+  activity_id       Int?
   group_id            Int?  
   name              String
   join_date         DateTime? @default(now())
   first_in          DateTime? @db.Time()
   last_out          DateTime? @db.Time()
   note              String @default("Empty")
-  activities        Activity[]
-  employee_activitys Employee_Activity[]
-  employee_timeoffs   Employee_TimeOff[]
   timeoff           TimeOff[]
   is_deleted        Boolean   @default(false)
   group             Group? @relation(fields: [group_id], references: [id])
+  activity          Activity? @relation(fields: [activity_id], references: [id])
 }
 
 model Group {
@@ -69,27 +68,35 @@ model Work {
 }
 
 model Activity {
-  id                Int                 @id @default(autoincrement())
-  employee_id        Int
+  id                Int @id @default(autoincrement())
   name              String
-  description       String
-  color             String
-  employee          Employee             @relation(fields: [employee_id], references: [id])
+  code              String
+  description       String @default("Empty")
+  color             String @default("#606060")
   is_deleted        Boolean   @default(false)
   clock_in          Clock_In[]
-  employee_activity Employee_Activity[]
-  proyects          Proyect[]
+  Projects          Project[]
+  employees         Employee[]
 }
 
-model Proyect {
+model Project {
   id           Int        @id @default(autoincrement())
   activity_id Int
+  type_id     Int?
   name         String
   code         String
-  type         String
   is_deleted        Boolean   @default(false)
   clock_ins     Clock_In[]
-  activity    Activity  @relation(fields: [activity_id], references: [id])
+  activity    Activity?  @relation(fields: [activity_id], references: [id])
+  type    Project_Type?  @relation(fields: [type_id], references: [id])
+}
+
+model Project_Type {
+  id      Int      @id @default(autoincrement())
+  name    String
+  color   String @default("blue")
+  is_deleted Boolean   @default(false) 
+  projects Project[] 
 }
 
 model TimeOff {
@@ -101,7 +108,6 @@ model TimeOff {
   status          String
   note            String? @default("Empty")
   is_deleted        Boolean   @default(false)
-  employee_timeoff Employee_TimeOff[]
   employee         Employee           @relation(fields: [employee_id], references: [id])
   type Type_TimeOff? @relation(fields: [type_id], references: [id]) 
 
@@ -115,14 +121,6 @@ model Type_TimeOff {
   timeOffs TimeOff[] 
 }
 
-model Employee_Activity {
-  id           Int       @id @default(autoincrement())
-  employee_id   Int
-  activitie_id Int
-  activity    Activity @relation(fields: [activitie_id], references: [id])
-  employee      Employee   @relation(fields: [employee_id], references: [id])
-}
-
 model Work_Schedule {
   id          Int      @id @default(autoincrement())
   schedule_id Int
@@ -134,19 +132,11 @@ model Work_Schedule {
 model Clock_In {
   id           Int       @id @default(autoincrement())
   activity_id Int
-  proyect_id   Int
+  Project_id   Int
   start_time   DateTime  @db.Time(6)
   date         DateTime  @db.Date
   note         String
   is_deleted        Boolean   @default(false)
   activity    Activity @relation(fields: [activity_id], references: [id])
-  proyect      Proyect   @relation(fields: [proyect_id], references: [id])
-}
-
-model Employee_TimeOff {
-  id         Int     @id @default(autoincrement())
-  employee_id Int
-  timeoff_id Int
-  employee    Employee @relation(fields: [employee_id], references: [id])
-  timeoff    TimeOff @relation(fields: [timeoff_id], references: [id])
+  Project      Project   @relation(fields: [Project_id], references: [id])
 }

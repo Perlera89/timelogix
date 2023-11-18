@@ -5,16 +5,9 @@ import dayjs from 'dayjs'
 // components
 import Avatar from '@/components/common/Avatar'
 
-// icons
-import {
-  CheckCircleOutlined,
-  CloseCircleOutlined,
-  SyncOutlined
-} from '@ant-design/icons'
-
 const { Text } = Typography
 
-const ViewTimeOff = ({ timeoff }) => {
+const ViewTimeOff = ({ timeoff, color, icon }) => {
   return (
     <>
       <div className="flex gap-4 items-center">
@@ -50,14 +43,8 @@ const ViewTimeOff = ({ timeoff }) => {
         <Text>Status:</Text>
         <Tag
           bordered={false}
-          color={timeoff.status}
-          icon={
-            <>
-              {timeoff.status === 'success' && <CheckCircleOutlined />}
-              {timeoff.status === 'processing' && <SyncOutlined />}
-              {timeoff.status === 'error' && <CloseCircleOutlined />}
-            </>
-          }
+          color={color}
+          icon={icon}
         >
           {timeoff.status}
         </Tag>

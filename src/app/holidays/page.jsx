@@ -14,8 +14,8 @@ import Modal from '@/components/Modal'
 import Drawer from '@/components/common/DrawerItem'
 import Result from '@/components/common/Result'
 
-import ViewHoliday from './admin/View'
-import AdminHoliday from './admin/Update'
+import ViewPage from './admin/View'
+import FormPage from './admin/Form'
 
 // icon
 import { FaTag } from 'react-icons/fa'
@@ -56,13 +56,13 @@ const HolidaysPage = () => {
   const [openResult, setOpenResult] = useState(false)
   const [isHolidayValidated, setIsHolidayValidated] = useState(false)
   const [clearModal, setClearModal] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   const [messageApi, contextHolder] = message.useMessage()
 
   // fetch data
   // -- holiday
   const fetchholidays = async (year) => {
-    console.log('holiday', holiday)
     setHolidaysUpdate(false)
     await axios
       .get(HOLIDAYS_ROUTE)
@@ -72,18 +72,17 @@ const HolidaysPage = () => {
             holiday.is_deleted === false &&
             new Date(holiday.start_date).getFullYear() === Number(year)
         )
-        console.log('holidaysData', holidaysData)
         setHolidays(holidaysData)
         setHolidaysCount(holidaysData.length)
 
         const deletedHolidaysData = response.data.filter(
           (holiday) => holiday.is_deleted
         )
-        console.log('deletedHolidays', deletedHolidaysData)
         setDeletedHolidays(deletedHolidaysData)
 
         // Guardar todos los empleados sin filtrar
         setAllHolidays(holidaysData)
+        setLoading(false)
       })
       .catch((error) => {
         setError(error)
@@ -111,7 +110,7 @@ const HolidaysPage = () => {
         holidays.filter((holiday) => holiday.type.id === selectedType)
       )
     }
-  }, [holidaysUpdate, holiday])
+  }, [holidaysUpdate])
 
   // handlers
   const eventHandlers = {
@@ -150,7 +149,6 @@ const HolidaysPage = () => {
       setIsHolidayValidated(isValidated)
     },
     handleYearChange: (year) => {
-      console.log('year', year.target.value)
       const yearFilter = holidays.filter(
         (holiday) =>
           new Date(holiday.start_date).getFullYear() === year.target.value
@@ -303,7 +301,6 @@ const HolidaysPage = () => {
       const filter = allHolidays.filter(
         (holiday) => holiday.type_id === Number(key)
       )
-      console.log('filter', filter)
       setHolidays(filter)
       const typeFilter = typeHolidays.find((type) => type.id === Number(key))
       setSelectedTypeName(typeFilter.name)
@@ -469,8 +466,9 @@ const HolidaysPage = () => {
       </div>
       <Table
         columns={columns}
-        data={holidayRows}
+        data={holidayRows || []}
         locale={{ emptyText: 'No data' }}
+        loading={loading}
       />
       <Drawer
         title="View holiday"
@@ -478,7 +476,7 @@ const HolidaysPage = () => {
         isOpen={openHoliday}
         isClose={eventHandlers.handleCloseholiday}
       >
-        <ViewHoliday holiday={holiday} />
+        <ViewPage holiday={holiday} />
       </Drawer>
       <Modal
         title="Add holiday"
@@ -488,7 +486,7 @@ const HolidaysPage = () => {
         handleSave={eventHandlers.handleSaveHoliday}
         validate={!isHolidayValidated}
       >
-        <AdminHoliday
+        <FormPage
           action={action}
           holiday={holiday}
           setHoliday={setHoliday}

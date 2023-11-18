@@ -1,38 +1,32 @@
-import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { NextResponse } from 'next/server'
+import { PrismaClient } from '@prisma/client'
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient()
 
-export async function GET() {
-  let getActivitie = await prisma.activitie.findMany({
-    where: {
-      is_deleted: false,
-    },include:{
-        employe:true,
+export async function GET () {
+  const getActivities = await prisma.activity.findMany({
+    include: {
+      employees: true
     }
-  });
-  await prisma.$disconnect();
-  return NextResponse.json(getActivitie);
+  })
+  await prisma.$disconnect()
+  return NextResponse.json(getActivities)
 }
 
-export async function POST(restActivitie) {
-  const { name, description, color, employeId } =
-    await restActivitie.json();
+export async function POST (restActivitie) {
+  const activityData =
+    await restActivitie.json()
 
-  let activitie = await prisma.activitie.create({
+  const activitie = await prisma.activity.create({
     data: {
-      name: name,
-      description: description,
-      color: color,
-      employe:{
-        connect:{
-            id:employeId
-        }
-      },
-      is_deleted: false,
-    },
-  });
+      name: activityData.name,
+      code: activityData.code,
+      description: activityData.description,
+      color: activityData.color,
+      is_deleted: false
+    }
+  })
 
-  await prisma.$disconnect();
-  return NextResponse.json(activitie);
+  await prisma.$disconnect()
+  return NextResponse.json(activitie)
 }

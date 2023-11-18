@@ -1,13 +1,14 @@
-import { Table } from "antd";
+import { Table } from 'antd'
 
-const App = ({ locale, columns, data }) => (
+const App = ({ locale, columns, data, loading }) => (
   <Table
     locale={locale}
     columns={columns}
     dataSource={data}
+    loading={loading}
     scroll={{
-      x: "auto",
+      x: 'auto'
     }}
   />
-);
-export default App;
+)
+export default App

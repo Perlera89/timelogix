@@ -19,9 +19,9 @@ export async function PUT (restTimeOff, { params }) {
             id: Number(timeoffData.type_id)
           }
         },
-        employe: {
+        employee: {
           connect: {
-            id: timeoffData.employe_id
+            id: timeoffData.employee_id
           }
         },
         is_deleted: false

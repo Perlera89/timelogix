@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
-import { EMPLOYEES_ROUTE, TYPE_TIMEOFFS_ROUTE } from '@/utils/apiRoutes'
+import { TYPE_HOLIDAYS_ROUTE } from '@/utils/apiRoutes'
 import { message, DatePicker } from 'antd'
 import dayjs from 'dayjs'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
 
 //   components
+import InputText from '@/components/entry/InputText'
+// import DatePicker from "@/components/entry/DatePicker";
 import SelectType from '@/components/entry/SelectCustom'
-import Select from '@/components/entry/Select'
-import Textarea from '@/components/entry/Textarea'
 import Badge from '@/components/common/Badge'
 import Result from '@/components/common/Result'
 
@@ -17,29 +17,20 @@ const dateFormat = 'YYYY-MM-DD'
 
 const { RangePicker } = DatePicker
 
-const Admintimeoff = ({
+const AdminHoliday = ({
   action,
-  timeoff,
-  setTimeoff,
+  holiday,
+  setHoliday,
   updateValidation,
   handleCancel
 }) => {
-  const statusOptions = {
-    success: 'success',
-    processing: 'processing',
-    reject: 'reject'
-  }
-
   // states
   const [types, setTypes] = useState([])
-  const [type, setType] = useState(null)
   const [typesUpdate, setTypesUpdate] = useState(false)
   const [typeName, setTypeName] = useState(null)
-  const [employees, setEmployees] = useState([])
-  const [employee, setEmployee] = useState(null)
-  const [status, setStatus] = useState(null)
+  const [name, setName] = useState(null)
+  const [type, setType] = useState(null)
   const [dates, setDates] = useState(null)
-  const [note, setNote] = useState(null)
   const [selectedColor, setSelectedColor] = useState('#606060')
   const [error, setError] = useState('')
   const [openResult, setOpenResult] = useState(false)
@@ -47,48 +38,40 @@ const Admintimeoff = ({
 
   // handlers
   const eventHandlers = {
-    handleEmployeeSelect: (value) => {
-      setEmployee(value)
-      setTimeoff((prevData) => ({
+    handleNameChange: (value) => {
+      setName(value)
+
+      setHoliday((prevData) => ({
         ...prevData,
-        employee_id: value
-      }))
-    },
-    handleStatusSelect: (value) => {
-      console.log('value', value)
-      setStatus(value)
-      setTimeoff((prevData) => ({
-        ...prevData,
-        status: value
+        name: value
       }))
     },
     handleTypeSelect: (value) => {
       setType(value)
-      setTimeoff((prevData) => ({
+      setHoliday((prevData) => ({
         ...prevData,
         type_id: value
       }))
     },
     handleTypeNameChange: (event) => {
-      setTypeName(event.target.value)
+      setTypeName(event.target.value.trimStart())
     },
     handleDatesChange: (value) => {
       const selectedDates = value || []
       const startDate = selectedDates[0]
       const endDate = selectedDates[1]
 
+      // if (startDate && endDate) {
+      //   if (startDate.isBefore(currentDate, 'day')) {
+      //     return
+      //   }
+      // }
+
       setDates(selectedDates)
-      setTimeoff((prevData) => ({
+      setHoliday((prevData) => ({
         ...prevData,
-        start_date: dayjs(startDate.format('YYYY-MM-DDTHH:mm:ssZ')).add(1, 'day'),
-        end_date: dayjs(endDate.format('YYYY-MM-DDTHH:mm:ssZ')).add(1, 'day')
-      }))
-    },
-    handleNoteChange: (event) => {
-      setNote(event.target.value)
-      setTimeoff((prevData) => ({
-        ...prevData,
-        note: event.target.value
+        start_date: dayjs(startDate.format('YYYY-MM-DDTHH:mm:ssZ')),
+        end_date: dayjs(endDate.format('YYYY-MM-DDTHH:mm:ssZ'))
       }))
     },
 
@@ -97,7 +80,6 @@ const Admintimeoff = ({
     },
     handleAddType: async (name) => {
       const existingTypes = types.map((type) => type.label)
-      console.log('name', name)
 
       if (existingTypes.includes(name)) {
         isExistsMessage(name)
@@ -107,7 +89,7 @@ const Admintimeoff = ({
           color: selectedColor
         }
         await axios
-          .post(TYPE_TIMEOFFS_ROUTE, type)
+          .post(TYPE_HOLIDAYS_ROUTE, type)
           .then((res) => {
             setTypesUpdate(true)
             setTypeName(null)
@@ -136,15 +118,13 @@ const Admintimeoff = ({
 
   // validations
   const validations = {
-    employee: (value) => !!value,
-    status: (value) => !!value,
+    name: (value) => !!value && value.length >= 3,
     type: (value) => !!value,
     dates: (value) => !!value
   }
 
   const [validation, setValidation] = useState({
-    employee: false,
-    status: false,
+    name: false,
     type: false,
     dates: false
   })
@@ -152,12 +132,11 @@ const Admintimeoff = ({
   // Actualizar el estado de validación
   useEffect(() => {
     setValidation({
-      employee: validations.employee(employee),
-      status: validations.type(status),
+      name: validations.name(name),
       type: validations.type(type),
       dates: validations.dates(dates)
     })
-  }, [employee, status, dates, type])
+  }, [name, dates, type])
 
   // Verificar los campos
   useEffect(() => {
@@ -166,11 +145,9 @@ const Admintimeoff = ({
   }, [validation])
 
   const resetForm = () => {
-    setEmployee(null)
+    setName(null)
     setDates(null)
     setType(null)
-    setStatus(null)
-    setNote(null)
   }
 
   useEffect(() => {
@@ -181,64 +158,39 @@ const Admintimeoff = ({
   useEffect(() => {
     setTypesUpdate(false)
     if (action === 'edit') {
-      setEmployee(timeoff.employee.id)
-      setType(timeoff.type.id)
-      setDates([dayjs(timeoff.start_date), dayjs(timeoff.end_date)])
-      setStatus(timeoff.status)
-      setNote(timeoff.note)
+      setName(holiday.name)
+      setType(holiday.type.id)
+      setDates([
+        dayjs(holiday.start_date),
+        dayjs(holiday.end_date)
+      ])
     }
+
     const fetchTypes = async () => {
-      await axios
-        .get(TYPE_TIMEOFFS_ROUTE)
-        .then((response) => {
-          const typesData = response.data
-          console.log('typesData', typesData)
-          setTypes(
-            typesData.map((type) => ({
-              value: type.id,
-              label: type.name
-            }))
-          )
-        })
-        .catch((error) => {
-          eventHandlers.handleOpenResult()
-          setError(error)
-        })
-    }
-    const fetchEmployees = async () => {
-      await axios
-        .get(EMPLOYEES_ROUTE)
-        .then((response) => {
-          const employeesData = response.data
-          setEmployees(
-            employeesData.map((employee) => ({
-              value: employee.id,
-              label: employee.name
-            }))
-          )
-        })
-        .catch((error) => {
-          eventHandlers.handleOpenResult()
-          setError(error)
-        })
+      const types = await axios.get(TYPE_HOLIDAYS_ROUTE)
+      const typesData = types.data
+      setTypes(
+        typesData.map((type) => ({
+          value: type.id,
+          label: type.name,
+          render: <button>Hola</button>
+        }))
+      )
     }
 
     fetchTypes()
-    fetchEmployees()
-  }, [action, timeoff, typesUpdate])
-
+  }, [action, typesUpdate, holiday])
   return (
     <>
       <div className="flex flex-col gap-2 mt-4">
         <Badge
-          title="Select employee is required"
-          validate={validation.employee}
+          title="Name is required: minimum 3 chareacteres"
+          validate={validation.name}
         >
-          <Select
-            placeholder="Select employee"
-            value={employee}
-            options={employees}
-            handleSelect={eventHandlers.handleEmployeeSelect}
+          <InputText
+            placeholder="Name"
+            value={name}
+            handleChange={eventHandlers.handleNameChange}
           />
         </Badge>
         <Badge title="Select type is required" validate={validation.type}>
@@ -255,7 +207,7 @@ const Admintimeoff = ({
             handleColorChange={eventHandlers.handleColorChange}
           />
         </Badge>
-        <Badge title="Select dates is required" validate={validation.dates}>
+        <Badge title="Date is required" validate={validation.dates}>
           <RangePicker
             className="w-full"
             placeholder={['Start date', 'End date']}
@@ -264,32 +216,6 @@ const Admintimeoff = ({
             onChange={eventHandlers.handleDatesChange}
           />
         </Badge>
-        <Badge title="Select status is required" validate={validation.status}>
-          <Select
-            placeholder="Select status"
-            options={[
-              {
-                label: <p className="text-green-500">Success</p>,
-                value: statusOptions.success
-              },
-              {
-                label: <p className="text-blue-500">Processing</p>,
-                value: statusOptions.processing
-              },
-              {
-                label: <p className="text-red-500">Reject</p>,
-                value: statusOptions.reject
-              }
-            ]}
-            value={status}
-            handleSelect={eventHandlers.handleStatusSelect}
-          />
-        </Badge>
-        <Textarea
-          placeholder="Note"
-          value={note}
-          handleChange={eventHandlers.handleNoteChange}
-        />
       </div>
       <Result
         title={error ? error.request.statusText : null}
@@ -302,4 +228,4 @@ const Admintimeoff = ({
   )
 }
 
-export default Admintimeoff
+export default AdminHoliday

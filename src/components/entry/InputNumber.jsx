@@ -1,7 +1,7 @@
-import React from "react";
-import { InputNumber } from "antd";
+import React from 'react'
+import { InputNumber } from 'antd'
 
-import { MdNumbers } from "react-icons/md";
+import { MdNumbers } from 'react-icons/md'
 
 const App = ({ placeholder, value, onChange }) => {
   return (
@@ -10,10 +10,10 @@ const App = ({ placeholder, value, onChange }) => {
       addonBefore={<MdNumbers />}
       className="w-full"
       type="number"
-      value={value}
+      value={value.trim()}
       onChange={onChange}
     />
-  );
-};
+  )
+}
 
-export default App;
+export default App

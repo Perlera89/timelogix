@@ -6,13 +6,18 @@ const prisma = new PrismaClient()
 export async function PUT (restEmployee, { params }) {
   try {
     const employeeData = await restEmployee.json()
-    const query = await prisma.employe.update({
+    const query = await prisma.employee.update({
       where: { id: Number(params.id) },
       data: {
         name: employeeData.name,
         group: {
           connect: {
             id: Number(employeeData.group_id)
+          }
+        },
+        activity: {
+          connect: {
+            id: Number(employeeData.activity_id)
           }
         },
         note: employeeData.note,

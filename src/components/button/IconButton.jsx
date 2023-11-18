@@ -1,4 +1,4 @@
-import { Button } from "antd";
+import { Button } from 'antd'
 
 const IconButton = ({ icon, size, click }) => {
   return (
@@ -9,7 +9,7 @@ const IconButton = ({ icon, size, click }) => {
       size={size}
       onClick={click}
     />
-  );
-};
+  )
+}
 
-export default IconButton;
+export default IconButton
