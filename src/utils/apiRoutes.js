@@ -10,3 +10,6 @@ export const TIMEOFFS_ROUTE = `${ROOT}/timeoffs`
 export const TYPE_TIMEOFFS_ROUTE = `${ROOT}/type-timeoffs`
 
 export const ACTIVITIES_ROUTE = `${ROOT}/activities`
+
+export const PROJECTS_ROUTE = `${ROOT}/projects`
+export const TYPE_PROJECTS_ROUTE = `${ROOT}/type-projects`

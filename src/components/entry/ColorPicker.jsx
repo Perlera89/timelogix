@@ -1,12 +1,11 @@
 import { ColorPicker, Divider } from 'antd'
 
-const App = ({ selectedColor, value, handleColorChange }) => {
+const App = ({ selectedColor, handleColorChange }) => {
   return (
     <ColorPicker
+      showText
       color={selectedColor}
       defaultValue="#606060"
-      showText
-      value={value}
       format="hex"
       onChange={handleColorChange}
       className="w-36"

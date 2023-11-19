@@ -95,7 +95,7 @@ const App = ({
         </>
       )}
       options={items}
-      open={open} // Usar el estado local para controlar la apertura y cierre del Select
+      open={open}
     />
   )
 }

@@ -27,7 +27,7 @@ model Employee {
 model Group {
   id      Int      @id @default(autoincrement())
   name    String
-  color   String @default("blue")
+  color   String @default("#606060")
   is_deleted Boolean   @default(false) 
   employees Employee[] 
 }
@@ -69,32 +69,33 @@ model Work {
 
 model Activity {
   id                Int @id @default(autoincrement())
+  project_id        Int?
   name              String
   code              String
   description       String @default("Empty")
   color             String @default("#606060")
   is_deleted        Boolean   @default(false)
   clock_in          Clock_In[]
-  Projects          Project[]
   employees         Employee[]
+  project    Project?  @relation(fields: [project_id], references: [id])
+
 }
 
 model Project {
   id           Int        @id @default(autoincrement())
-  activity_id Int
   type_id     Int?
   name         String
   code         String
   is_deleted        Boolean   @default(false)
   clock_ins     Clock_In[]
-  activity    Activity?  @relation(fields: [activity_id], references: [id])
-  type    Project_Type?  @relation(fields: [type_id], references: [id])
+  activities Activity[]
+  type    Type_Project?  @relation(fields: [type_id], references: [id])
 }
 
-model Project_Type {
+model Type_Project {
   id      Int      @id @default(autoincrement())
   name    String
-  color   String @default("blue")
+  color   String @default("#606060")
   is_deleted Boolean   @default(false) 
   projects Project[] 
 }

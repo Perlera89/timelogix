@@ -32,11 +32,11 @@ const AdminEmployee = ({
   // handlers
   const eventHandlers = {
     handleNameChange: (value) => {
-      setName(value)
+      setName(value.trimStart())
 
       setEmployee((prevData) => ({
         ...prevData,
-        name: value
+        name: value.trimStart()
       }))
     },
     handleGroupSelect: (value) => {

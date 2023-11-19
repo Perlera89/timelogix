@@ -39,11 +39,11 @@ const AdminHoliday = ({
   // handlers
   const eventHandlers = {
     handleNameChange: (value) => {
-      setName(value)
+      setName(value.trimStart())
 
       setHoliday((prevData) => ({
         ...prevData,
-        name: value
+        name: value.trimStart()
       }))
     },
     handleTypeSelect: (value) => {

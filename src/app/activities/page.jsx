@@ -1,4 +1,4 @@
-import AdminPage from './admin/Page'
+import AdminPage from './admin/Main'
 const ActivitiesPage = () => {
   return <AdminPage />
 }

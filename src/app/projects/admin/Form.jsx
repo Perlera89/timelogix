@@ -175,6 +175,7 @@ const AdminActivity = ({
         </Badge>
         <ColorPicker
           selectedColor={color}
+          value={color}
           handleColorChange={eventHandlers.handleColorChange}
         />
         <Textarea

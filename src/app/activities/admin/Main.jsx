@@ -11,6 +11,7 @@ import Card from '@/components/common/CardItem'
 import Modal from '@/components/Modal'
 import Drawer from '@/components/common/DrawerItem'
 import Result from '@/components/common/Result'
+import Avatar from '@/components/common/Avatar'
 
 import FormPage from './Form'
 import ViewPage from './View'
@@ -26,7 +27,7 @@ import {
 
 import { ACTIVITIES_ROUTE, EMPLOYEES_ROUTE } from '@/utils/apiRoutes'
 
-const activitysPage = () => {
+const ActivitiesPage = () => {
   // states
   const [activity, setActivity] = useState({})
   const [allActivities, setAllActivities] = useState([])
@@ -310,11 +311,22 @@ const activitysPage = () => {
       color: <Tag className="p-2 rounded-full" color={activity.color} />,
       name: activity.name,
       code: activity.code,
-      employees: activity.employees.map((employee) => (
-        <Tag key={employee.id} bordered={false} color="blue">
-          {employee.name}
-        </Tag>
-      )),
+      employees: (
+        <div className="flex justify-start gap-4">
+          {activity.employees.map((employee) => (
+            <div
+              className="flex gap-2 items-center"
+            >
+              <Avatar>
+                <p className="text-lg">{employee.name[0]}</p>
+              </Avatar>
+              <div className="flex flex-col">
+                <p>{employee.name}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ),
       actions: activity.is_deleted
         ? (
         <Popconfirm
@@ -471,4 +483,4 @@ const activitysPage = () => {
   )
 }
 
-export default activitysPage
+export default ActivitiesPage
