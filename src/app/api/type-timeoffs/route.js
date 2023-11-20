@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import prisma from '@/libs/prisma'
 
 export async function GET () {
   const typeTimeoff = await prisma.type_TimeOff.findMany({

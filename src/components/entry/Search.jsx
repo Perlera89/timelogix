@@ -27,7 +27,7 @@ const Search = ({ text, onSearch, options, update }) => {
       <Search
         allowClear
         placeholder={text || 'Search'}
-        className="md:mr-4 xl:w-[400px] w-full"
+        className="w-full min-w-[400px]"
         onSearch={handleSearch}
         onChange={(e) => handleSearch(e.target.value)}
         enterButton

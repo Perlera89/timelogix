@@ -1,15 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import axios from 'axios'
-import { EMPLOYEES_ROUTE } from '@/utils/apiRoutes'
 
 //   components
 import InputText from '@/components/entry/InputText'
 import Input from '@/components/entry/Input'
 import ColorPicker from '@/components/entry/ColorPicker'
-import MultipleSelect from '@/components/entry/MultipleSelect'
 import Textarea from '@/components/entry/Textarea'
 import Badge from '@/components/common/Badge'
-import Result from '@/components/common/Result'
 
 const AdminActivity = ({
   action,
@@ -22,11 +18,7 @@ const AdminActivity = ({
   const [name, setName] = useState(null)
   const [code, setCode] = useState(null)
   const [description, setDescription] = useState(null)
-  const [employeesData, setEmployeesData] = useState(null)
-  const [employees, setEmployees] = useState(null)
   const [color, setColor] = useState('#606060')
-  const [error, setError] = useState('')
-  const [openResult, setOpenResult] = useState(false)
 
   // handlers
   const eventHandlers = {
@@ -46,13 +38,6 @@ const AdminActivity = ({
         code: event.target.value.trim()
       }))
     },
-    handleEmployeeSelect: (value) => {
-      setEmployees(value)
-      setActivity((prevData) => ({
-        ...prevData,
-        employees: value
-      }))
-    },
     handleDescriptionChange: (event) => {
       setDescription(event.target.value)
       setActivity((prevData) => ({
@@ -66,20 +51,13 @@ const AdminActivity = ({
         ...prevData,
         color: color.toHexString()
       }))
-    },
-    handleOpenResult: () => {
-      setOpenResult(true)
-    },
-    handleCloseResult: () => {
-      setOpenResult(false)
     }
   }
 
   // validations
   const validations = {
     name: (value) => !!value && value.length >= 3,
-    code: (value) => !!value && value.length >= 3,
-    employees: (value) => !!value
+    code: (value) => !!value && value.length >= 3
   }
 
   const [validation, setValidation] = useState({
@@ -92,10 +70,9 @@ const AdminActivity = ({
   useEffect(() => {
     setValidation({
       name: validations.name(name),
-      code: validations.code(code),
-      employees: validations.employees(employees)
+      code: validations.code(code)
     })
-  }, [name, code, employees])
+  }, [name, code])
 
   // Verificar los campos
   useEffect(() => {
@@ -106,7 +83,6 @@ const AdminActivity = ({
   const resetForm = () => {
     setName(null)
     setCode(null)
-    setEmployees(null)
     setColor(null)
   }
 
@@ -119,30 +95,10 @@ const AdminActivity = ({
     if (action === 'edit') {
       setName(activity.name)
       setCode(activity.code)
-      setEmployees(activity.employees.map((employee) => employee.id))
       setColor(activity.color)
       setDescription(activity.description)
     }
-
-    const fetchEmployees = async () => {
-      await axios
-        .get(EMPLOYEES_ROUTE)
-        .then((response) => {
-          setEmployeesData(
-            response.data.map((employee) => ({
-              value: employee.id,
-              label: employee.name
-            }))
-          )
-        })
-        .catch((error) => {
-          setError(error)
-          eventHandlers.handleOpenResult()
-        })
-    }
-
-    fetchEmployees()
-  }, [action, activity])
+  }, [action])
   return (
     <>
       <div className="flex flex-col gap-2 mt-4">
@@ -166,30 +122,17 @@ const AdminActivity = ({
             handleChange={eventHandlers.handleCodeChange}
           />
         </Badge>
-        <Badge title="Select group is required" validate={validation.employees}>
-          <MultipleSelect
-            placeholder="Select employees"
-            handleSelect={eventHandlers.handleEmployeeSelect}
-            options={employeesData}
+          <ColorPicker
+            rootClassName='max-w-[100px]'
+            selectedColor={color}
+            handleColorChange={eventHandlers.handleColorChange}
           />
-        </Badge>
-        <ColorPicker
-          selectedColor={color}
-          handleColorChange={eventHandlers.handleColorChange}
-        />
         <Textarea
           placeholder="Description"
           value={description}
           handleChange={eventHandlers.handleDescriptionChange}
         />
       </div>
-      <Result
-        title={error ? error.request.statusText : null}
-        subtitle={error ? error.message : null}
-        error={error ? error.stack : null}
-        open={openResult}
-        handleClose={eventHandlers.handleCloseResult}
-      />
     </>
   )
 }

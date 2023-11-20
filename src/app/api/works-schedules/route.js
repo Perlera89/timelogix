@@ -1,38 +1,36 @@
-import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { NextResponse } from 'next/server'
+import prisma from '@/libs/prisma'
 
-const prisma = new PrismaClient();
-
-export async function GET() {
-  let getWorkSche = await prisma.work_Schedule.findMany({
-    include:{
-        schedule:true,
-        work:true
+export async function GET () {
+  const getWorkSche = await prisma.work_Schedule.findMany({
+    include: {
+      schedule: true,
+      work: true
     }
-  });
-  await prisma.$disconnect();
-  return NextResponse.json(getWorkSche);
+  })
+  await prisma.$disconnect()
+  return NextResponse.json(getWorkSche)
 }
 
-export async function POST(restWorkSche) {
-  const { workId,scheduleId } =
-    await restWorkSche.json();
+export async function POST (restWorkSche) {
+  const { workId, scheduleId } =
+    await restWorkSche.json()
 
-  let workSchedule = await prisma.work_Schedule.create({
+  const workSchedule = await prisma.work_Schedule.create({
     data: {
-      work:{
-        connect:{
-            id:workId
+      work: {
+        connect: {
+          id: workId
         }
       },
-      schedule:{
-        connect:{
-            id:scheduleId
+      schedule: {
+        connect: {
+          id: scheduleId
         }
       }
-    },
-  });
+    }
+  })
 
-  await prisma.$disconnect();
-  return NextResponse.json(workSchedule);
+  await prisma.$disconnect()
+  return NextResponse.json(workSchedule)
 }

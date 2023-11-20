@@ -1,19 +1,16 @@
-import "./globals.css";
-import { Inter } from "next/font/google";
-import Providers from "./providers";
-import Layout from "@/components/layout/Main";
-import { Typography } from "antd";
+import './globals.css'
+import { Inter } from 'next/font/google'
+import Providers from './providers'
+import Layout from '@/components/layout/Main'
 
-const { Text } = Typography;
-
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
-  title: "TimeLogix",
-  description: "",
-};
+  title: 'TimeLogix',
+  description: ''
+}
 
-export default function RootLayout({ children }) {
+export default function RootLayout ({ children }) {
   return (
     <html lang="en">
       <head>
@@ -25,5 +22,5 @@ export default function RootLayout({ children }) {
         </Providers>
       </body>
     </html>
-  );
+  )
 }

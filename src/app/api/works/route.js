@@ -1,29 +1,27 @@
-import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { NextResponse } from 'next/server'
+import prisma from '@/libs/prisma'
 
-const prisma = new PrismaClient();
-
-export async function GET() {
-  let getWorks = await prisma.work.findMany({
+export async function GET () {
+  const getWorks = await prisma.work.findMany({
     where: {
-      is_deleted: false,
+      is_deleted: false
     }
-  });
-  await prisma.$disconnect();
-  return NextResponse.json(getWorks);
+  })
+  await prisma.$disconnect()
+  return NextResponse.json(getWorks)
 }
 
-export async function POST(restWork) {
-  const { name} =
-    await restWork.json();
+export async function POST (restWork) {
+  const { name } =
+    await restWork.json()
 
-  let work = await prisma.work.create({
+  const work = await prisma.work.create({
     data: {
-      name: name,
-      is_deleted: false,
-    },
-  });
+      name,
+      is_deleted: false
+    }
+  })
 
-  await prisma.$disconnect();
-  return NextResponse.json(work);
+  await prisma.$disconnect()
+  return NextResponse.json(work)
 }

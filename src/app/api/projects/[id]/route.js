@@ -1,29 +1,28 @@
-import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { NextResponse } from 'next/server'
+import prisma from '@/libs/prisma'
 
-const prisma = new PrismaClient();
-
-export async function PUT(restProyect ,{ params }) {
+export async function PUT (restProyect, { params }) {
   try {
-    const {name, code, type, activitieId } =
-    await restProyect.json();
+    const { name, code, type, activitieId } =
+    await restProyect.json()
 
-  let proyect = await prisma.proyect.update({
-    data: {
-      name: name,
-      code: code,
-      type: type,
-      activitie:{
-          connect:{
-            id:activitieId
-        }
+    const proyect = await prisma.proyect.update({
+      data: {
+        name,
+        code,
+        type,
+        activitie: {
+          connect: {
+            id: activitieId
+          }
+        },
+        is_deleted: false
       },
-      is_deleted: false,
-    },where:{ id:Number(params.id)}
-  });
-    return NextResponse.json(proyect);
+      where: { id: Number(params.id) }
+    })
+    return NextResponse.json(proyect)
   } catch (error) {
-    console.log("error", error);
-    return NextResponse.json(error);
+    console.log('error', error)
+    return NextResponse.json(error)
   }
 }

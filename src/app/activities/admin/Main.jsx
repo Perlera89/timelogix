@@ -34,12 +34,9 @@ const ActivitiesPage = () => {
   const [activities, setActivities] = useState([])
   const [activitiesCount, setActivitiesCount] = useState(0)
   const [activitiesUpdate, setActivitiesUpdate] = useState(false)
-  const [newActivitySaved, setNewActivitySaved] = useState(false)
   const [deletedActivities, setDeletedActivities] = useState([])
   const [employees, setEmployees] = useState(null)
-  const [employeesData, setEmployeesData] = useState(null)
   const [employee, setEmployee] = useState(null)
-  const [employeesId, setEmployeesId] = useState(null)
   const [openActivity, setOpenActivity] = useState(false)
   const [openModal, setOpenModal] = useState(false)
   const [action, setAction] = useState('add')
@@ -82,7 +79,6 @@ const ActivitiesPage = () => {
     await axios
       .get(EMPLOYEES_ROUTE)
       .then((response) => {
-        setEmployeesData(response.data)
         const employeesData = response.data.map((employee) => ({
           value: employee.id,
           label: employee.name
@@ -145,16 +141,17 @@ const ActivitiesPage = () => {
       setEmployee(value)
       eventHandlers.handleFilterChange(value)
     },
+    handleFilterChange: (value) => {
+      filterActivities(value)
+    },
     handleSaveActivity: async () => {
       try {
         if (action === 'add') {
-          setEmployeesId(activity.employees)
           const response = await axios.post(ACTIVITIES_ROUTE, activity)
           const newActivity = response.data
           setActivity(newActivity)
           console.log('activity saved succesfully', newActivity)
           messages.addSuccess(activity.name)
-          setNewActivitySaved(true)
 
           eventHandlers.handleCloseModal()
         } else {
@@ -166,99 +163,59 @@ const ActivitiesPage = () => {
           const updatedactivity = response.data
           setActivity(updatedactivity)
           setActivitiesUpdate(true)
-          setNewActivitySaved(true)
           messages.editSuccess(updatedactivity.name)
         }
+
+        eventHandlers.handleCloseModal()
+        setActivitiesUpdate(true)
       } catch (error) {
         setError(error)
         eventHandlers.handleOpenResult()
       }
     },
     handleDeleteActivity: async (activity) => {
-      try {
-        const id = activity.id
-        await axios.put(`${ACTIVITIES_ROUTE}/${id}/delete`)
-        setActivitiesUpdate(true)
-        messages.deletedSuccess()
-      } catch (error) {
-        setError(error)
-        eventHandlers.handleOpenResult()
-      }
+      const id = activity.id
+      await axios
+        .put(`${ACTIVITIES_ROUTE}/${id}/delete`)
+        .then((response) => {
+          setActivitiesUpdate(true)
+          messages.deletedSuccess()
+        })
+        .catch((error) => {
+          setError(error)
+          eventHandlers.handleOpenResult()
+        })
     },
     handleRestoreactivity: async (activity) => {
-      try {
-        const id = activity.id
-        const name = activity.name
-        await axios.put(`${ACTIVITIES_ROUTE}/${id}/restore`)
-        setActivitiesUpdate(true)
-        messages.restoredSuccess(name)
-      } catch (error) {
-        setError(error)
-        eventHandlers.handleOpenResult()
-      }
-    },
-    handleFilterChange: (value) => {
-      filterActivities(value)
+      const id = activity.id
+      await axios
+        .put(`${ACTIVITIES_ROUTE}/${id}/restore`)
+        .then((response) => {
+          setActivitiesUpdate(true)
+          messages.deletedSuccess()
+        })
+        .catch((error) => {
+          setError(error)
+          eventHandlers.handleOpenResult()
+        })
     }
   }
 
-  // Luego de ingresar la actividad se actualizan los empleados
-  useEffect(() => {
-    const updateEmployee = async () => {
-      if (newActivitySaved) {
-        await employeesId.forEach(async (employeeId) => {
-          console.log('employeeId', employeeId)
-          const data = employeesData.find(
-            (employee) => employee.id === Number(employeeId)
-          )
-          data.activity_id = activity.id
-          console.log('data', data)
-          await axios
-            .put(`${EMPLOYEES_ROUTE}/${data.id}`, data)
-            .then((res) => console.log('res', res))
-            .catch((err) => {
-              setError(err)
-              eventHandlers.handleOpenResult()
-            })
-        })
-      }
-    }
-    updateEmployee()
-    setNewActivitySaved(false)
-    eventHandlers.handleCloseModal()
-    setActivitiesUpdate(true)
-  }, [newActivitySaved])
-
   // message
   const messages = {
-    addSuccess: (name) => {
-      messageApi.open({
-        type: 'success',
-        content: `${name} saved successfully`,
-        duration: 5
-      })
-    },
-    editSuccess: (name) => {
-      messageApi.open({
-        type: 'success',
-        content: `${name} updated successfully`,
-        duration: 5
-      })
-    },
-    deletedSuccess: () => {
-      messageApi.open({
-        type: 'success',
-        content: 'deleted successfully',
-        duration: 5
-      })
-    },
-    restoredSuccess: (name) => {
-      messageApi.open({
-        type: 'success',
-        content: `${name} restored successfully`,
-        duration: 5
-      })
-    }
+    addSuccess: (name) => showMessage('success', `${name} saved successfully`),
+    editSuccess: (name) =>
+      showMessage('success', `${name} updated successfully`),
+    deletedSuccess: () => showMessage('success', 'Deleted successfully'),
+    restoredSuccess: () => showMessage('success', 'Restored successfully')
+  }
+
+  const showMessage = (type, content) => {
+    messageApi.open({
+      type,
+      content,
+      duration: 5
+    })
   }
 
   const filterActivities = (value) => {
@@ -314,9 +271,7 @@ const ActivitiesPage = () => {
       employees: (
         <div className="flex justify-start gap-4">
           {activity.employees.map((employee) => (
-            <div
-              className="flex gap-2 items-center"
-            >
+            <div className="flex gap-2 items-center">
               <Avatar>
                 <p className="text-lg">{employee.name[0]}</p>
               </Avatar>

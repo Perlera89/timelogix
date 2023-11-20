@@ -1,6 +1,6 @@
 import { ColorPicker, Divider } from 'antd'
 
-const App = ({ selectedColor, handleColorChange }) => {
+const App = ({ selectedColor, handleColorChange, rootClassName }) => {
   return (
     <ColorPicker
       showText
@@ -9,6 +9,7 @@ const App = ({ selectedColor, handleColorChange }) => {
       format="hex"
       onChange={handleColorChange}
       className="w-36"
+      rootClassName={rootClassName}
       renderLabel={(color) => <span style={{ color }}>{color.label}</span>}
       presets={[
         {

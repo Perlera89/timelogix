@@ -1,25 +1,24 @@
-import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { NextResponse } from 'next/server'
+import prisma from '@/libs/prisma'
 
-const prisma = new PrismaClient();
-
-export async function PUT(restSchedule ,{ params }) {
+export async function PUT (restSchedule, { params }) {
   try {
-    const {name, startTime, endTime, note } =
-    await restSchedule.json();
+    const { name, startTime, endTime, note } =
+    await restSchedule.json()
 
-  let schedule = await prisma.schedule.update({
-    data: {
-      name: name,
-      start_time: startTime,
-      end_time: endTime,
-      note: note,
-      is_deleted: false,
-    },where:{ id:Number(params.id)}
-  });
-    return NextResponse.json(schedule);
+    const schedule = await prisma.schedule.update({
+      data: {
+        name,
+        start_time: startTime,
+        end_time: endTime,
+        note,
+        is_deleted: false
+      },
+      where: { id: Number(params.id) }
+    })
+    return NextResponse.json(schedule)
   } catch (error) {
-    console.log("error", error);
-    return NextResponse.json(error);
+    console.log('error', error)
+    return NextResponse.json(error)
   }
 }

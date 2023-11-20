@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import prisma from '@/libs/prisma'
 
 export async function GET () {
   const employees = await prisma.employee.findMany({
     include: {
-      group: true
+      group: true,
+      activity: true
     }
   })
   await prisma.$disconnect()
@@ -17,17 +16,27 @@ export async function GET () {
 export async function POST (restEmployee) {
   const employeeData = await restEmployee.json()
 
-  const employee = await prisma.employee.create({
-    data: {
-      name: employeeData.name,
-      group: {
-        connect: {
-          id: Number(employeeData.group_id)
-        }
-      },
-      note: employeeData.note,
-      is_deleted: false
+  const employeeCreateData = {
+    name: employeeData.name,
+    group: {
+      connect: {
+        id: Number(employeeData.group_id)
+      }
+    },
+    note: employeeData.note,
+    is_deleted: false
+  }
+
+  if (employeeData.activity_id) {
+    employeeCreateData.activity = {
+      connect: {
+        id: Number(employeeData.activity_id)
+      }
     }
+  }
+
+  const employee = await prisma.employee.create({
+    data: employeeCreateData
   })
 
   await prisma.$disconnect()

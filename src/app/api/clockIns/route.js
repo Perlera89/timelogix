@@ -1,44 +1,43 @@
-import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { NextResponse } from 'next/server'
+import prisma from '@/libs/prisma'
 
-const prisma = new PrismaClient();
-
-export async function GET() {
-  let getClockIn = await prisma.clock_In.findMany({
+export async function GET () {
+  const getClockIn = await prisma.clock_In.findMany({
     where: {
-      is_deleted: false,
-    },include:{
-        activitie:true,
-        proyect:true
+      is_deleted: false
+    },
+    include: {
+      activitie: true,
+      proyect: true
     }
-  });
-  await prisma.$disconnect();
-  return NextResponse.json(getClockIn);
+  })
+  await prisma.$disconnect()
+  return NextResponse.json(getClockIn)
 }
 
-export async function POST(restClockIn) {
+export async function POST (restClockIn) {
   const { startTime, date, note, activitieId, proyectId } =
-    await restClockIn.json();
+    await restClockIn.json()
 
-  let clockin = await prisma.clock_In.create({
+  const clockin = await prisma.clock_In.create({
     data: {
       start_time: startTime,
-      date: date,
-      note: note,
-      activitie:{
-        connect:{
-            id:activitieId
+      date,
+      note,
+      activitie: {
+        connect: {
+          id: activitieId
         }
       },
-      proyect:{
-        connect:{
-            id:proyectId
+      proyect: {
+        connect: {
+          id: proyectId
         }
       },
-      is_deleted: false,
-    },
-  });
+      is_deleted: false
+    }
+  })
 
-  await prisma.$disconnect();
-  return NextResponse.json(clockin);
+  await prisma.$disconnect()
+  return NextResponse.json(clockin)
 }

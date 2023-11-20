@@ -23,7 +23,7 @@ const App = ({ value, placeholder, options, handleSelect }) => (
         No data
       </Text>
     }
-    className="w-full"
+    className="w-full min-w-[150px]"
   />
 )
 

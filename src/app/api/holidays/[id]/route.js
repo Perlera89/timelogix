@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import prisma from '@/libs/prisma'
 
-const prisma = new PrismaClient()
 export async function PUT (restTimeOff, { params }) {
   try {
     const timeoffData = await restTimeOff.json()
