@@ -156,16 +156,6 @@ const AdminHoliday = ({
 
   // fetch data
   useEffect(() => {
-    setTypesUpdate(false)
-    if (action === 'edit') {
-      setName(holiday.name)
-      setType(holiday.type.id)
-      setDates([
-        dayjs(holiday.start_date),
-        dayjs(holiday.end_date)
-      ])
-    }
-
     const fetchTypes = async () => {
       const types = await axios.get(TYPE_HOLIDAYS_ROUTE)
       const typesData = types.data
@@ -177,9 +167,15 @@ const AdminHoliday = ({
         }))
       )
     }
-
     fetchTypes()
-  }, [action, typesUpdate, holiday])
+
+    if (action === 'edit') {
+      setName(holiday.name)
+      setType(holiday.type.id)
+      setDates([dayjs(holiday.start_date), dayjs(holiday.end_date)])
+    }
+    setTypesUpdate(false)
+  }, [action, typesUpdate])
   return (
     <>
       <div className="flex flex-col gap-2 mt-4">

@@ -1,19 +1,17 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/libs/prisma'
 
-export async function PUT (restProyect, { params }) {
+export async function PUT (restProject, { params }) {
   try {
-    const { name, code, type, activitieId } =
-    await restProyect.json()
+    const projectData = await restProject.json()
 
-    const proyect = await prisma.proyect.update({
+    const proyect = await prisma.project.update({
       data: {
-        name,
-        code,
-        type,
-        activitie: {
+        name: projectData.name,
+        code: projectData.code,
+        type: {
           connect: {
-            id: activitieId
+            id: Number(projectData.type_id)
           }
         },
         is_deleted: false

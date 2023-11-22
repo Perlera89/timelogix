@@ -182,20 +182,19 @@ const AdminEmployee = ({
       })
   }
   useEffect(() => {
+    const fetchData = async () => {
+      await fetchGroups()
+      await fetchActivities()
+    }
+    fetchData()
+
     if (action === 'edit') {
       setName(employee.name)
       setGroup(employee.group?.id)
       setActivity(employee.activity?.id)
       setNote(employee.note)
     }
-
-    const fetchData = async () => {
-      await fetchGroups()
-      await fetchActivities()
-    }
     setGroupsUpdate(false)
-
-    fetchData()
   }, [action, groupsUpdate])
   return (
     <>

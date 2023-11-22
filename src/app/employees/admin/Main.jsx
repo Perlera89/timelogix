@@ -254,12 +254,12 @@ const EmployeesPage = () => {
     if (filter === 'group') {
       setActivity(null)
       filteredEmployees = allEmployees.filter(
-        (employee) => employee.group.id === value
+        (employee) => employee.group_id === value
       )
     } else if (filter === 'activity') {
       setGroup(null)
       filteredEmployees = allEmployees.filter(
-        (employee) => employee.activity.id === value
+        (employee) => employee.activity_id === value
       )
     }
 
@@ -310,13 +310,13 @@ const EmployeesPage = () => {
       dataIndex: 'name'
     },
     {
-      title: 'Activity',
-      dataIndex: 'activity',
+      title: 'Group',
+      dataIndex: 'group',
       align: 'center'
     },
     {
-      title: 'Group',
-      dataIndex: 'group',
+      title: 'Activity',
+      dataIndex: 'activity',
       align: 'center'
     },
     {
@@ -377,10 +377,10 @@ const EmployeesPage = () => {
           .add(1, 'day')
           .format('MMM, DD YYYY'),
         firstIn: employee.first_in
-          ? dayjs(employee.first_in).add(1, 'day').format('HH:mm')
+          ? dayjs(employee.first_in).format('HH:mm')
           : 'No hour',
         lastOut: employee.last_aut
-          ? dayjs(employee.last_aut).add(1, 'day').format('HH:mm')
+          ? dayjs(employee.last_aut).format('HH:mm')
           : 'No hour',
         actions: employee.is_deleted
           ? (

@@ -3,7 +3,7 @@ import prisma from '@/libs/prisma'
 
 export async function PUT (restProyect, { params }) {
   try {
-    const query = await prisma.proyect.update({
+    const query = await prisma.project.update({
       where: { id: Number(params.id) },
       data: {
         is_deleted: true

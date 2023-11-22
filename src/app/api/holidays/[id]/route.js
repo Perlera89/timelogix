@@ -1,24 +1,18 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/libs/prisma'
 
-export async function PUT (restTimeOff, { params }) {
+export async function PUT (restHoliday, { params }) {
   try {
-    const timeoffData = await restTimeOff.json()
-    const query = await prisma.timeOff.update({
+    const holidayData = await restHoliday.json()
+    const query = await prisma.holiday.update({
       where: { id: Number(params.id) },
       data: {
-        start_date: timeoffData.start_date,
-        end_date: timeoffData.end_date,
-        status: timeoffData.status,
-        note: timeoffData.note,
+        start_date: holidayData.start_date,
+        end_date: holidayData.end_date,
+        note: holidayData.note,
         type: {
           connect: {
-            id: Number(timeoffData.type_id)
-          }
-        },
-        employe: {
-          connect: {
-            id: timeoffData.employe_id
+            id: Number(holidayData.type_id)
           }
         },
         is_deleted: false

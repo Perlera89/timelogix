@@ -1,18 +1,18 @@
 'use client'
-import { Button, Tag, Popconfirm, Typography, message } from 'antd'
+import { Button, Tag, Popconfirm, message } from 'antd'
 import axios from 'axios'
-import dayjs from 'dayjs'
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 
 // components
 import Table from '@/components/common/Table'
 import Search from '@/components/entry/Search'
+import Select from '@/components/entry/Select'
 import Dropdown from '@/components/common/Dropdown'
 import Card from '@/components/common/CardItem'
-import Avatar from '@/components/common/Avatar'
 import Modal from '@/components/Modal'
 import Drawer from '@/components/common/DrawerItem'
 import Result from '@/components/common/Result'
+import SkeletonTable from '@/components/skeleton/SkeletonTable'
 
 import FormPage from './Form'
 import ViewPage from './View'
@@ -28,18 +28,17 @@ import {
 
 import { PROJECTS_ROUTE, TYPE_PROJECTS_ROUTE } from '@/utils/apiRoutes'
 
-const { Text } = Typography
-
 const ProjectsPage = () => {
   // states
   const [project, setProject] = useState({})
   const [allProjects, setAllProjects] = useState([])
   const [projects, setProjects] = useState([])
+  const [activities, setActivities] = useState([])
+  const [activity, setActivity] = useState([])
   const [projectsCount, setProjectsCount] = useState(0)
   const [projectsUpdate, setProjectsUpdate] = useState(false)
   const [deletedProjects, setDeletedProjects] = useState([])
   const [types, setTypes] = useState([])
-  const [typesCount, setTypesCount] = useState(0)
   const [openProject, setOpenProject] = useState(false)
   const [openModal, setOpenModal] = useState(false)
   const [selectedType, setSelectedType] = useState('all')
@@ -55,45 +54,49 @@ const ProjectsPage = () => {
 
   // fetch data
   // -- project
-  const fetchprojects = async () => {
+  const fetchProjects = async () => {
     setProjectsUpdate(false)
-    try {
-      const response = await axios.get(PROJECTS_ROUTE)
-      console.log('response', response)
-      const projectsData = response.data.filter(
-        (project) => project.is_deleted === false
-      )
-      setProjects(projectsData)
-      setProjectsCount(projectsData.length)
+    await axios
+      .get(PROJECTS_ROUTE)
+      .then((response) => {
+        const projectsData = response.data.filter(
+          (project) => project.is_deleted === false
+        )
+        setProjects(projectsData)
+        setProjectsCount(projectsData.length)
 
-      const deletedprojectsData = response.data.filter(
-        (project) => project.is_deleted
-      )
-      setDeletedProjects(deletedprojectsData)
+        const deletedprojectsData = response.data.filter(
+          (project) => project.is_deleted
+        )
+        setDeletedProjects(deletedprojectsData)
 
-      setAllProjects(projectsData)
-      setLoading(false)
-    } catch (error) {
-      eventHandlers.handleOpenResult()
-      setError(error)
-    }
+        setAllProjects(projectsData)
+        setLoading(false)
+      })
+      .catch((error) => {
+        eventHandlers.handleOpenResult()
+        setError(error)
+      })
   }
 
   // -- types
-  const fetchtypes = async () => {
-    try {
-      const response = await axios.get(TYPE_PROJECTS_ROUTE)
-      setTypesCount(response.data.length)
-      setTypes(response.data)
-    } catch (error) {
-      eventHandlers.handleOpenResult()
-      setError(error)
-    }
+  const fetchTypes = async () => {
+    await axios
+      .get(TYPE_PROJECTS_ROUTE)
+      .then((response) => {
+        setTypes(response.data)
+      })
+      .catch((error) => {
+        eventHandlers.handleOpenResult()
+        setError(error)
+      })
   }
 
   useEffect(() => {
-    fetchprojects()
-    fetchtypes()
+    const fetchData = async () => {
+      await fetchProjects()
+      await fetchTypes()
+    }
     setSelectedTypeName('All')
 
     if (selectedType === 'all') {
@@ -103,6 +106,7 @@ const ProjectsPage = () => {
         projects.filter((project) => project.type.id === selectedType)
       )
     }
+    fetchData()
   }, [projectsUpdate])
 
   // handlers
@@ -140,6 +144,13 @@ const ProjectsPage = () => {
     handleProjectValidation: (isValidated) => {
       setIsProjectValidated(isValidated)
     },
+    handleActivitySelect: (value) => {
+      setActivity(value)
+      eventHandlers.handleFilterActivityChange(value)
+    },
+    handleFilterActivityChange: (value) => {
+      filterActivity(value)
+    },
     handleSaveProject: async () => {
       try {
         if (action === 'add') {
@@ -166,27 +177,30 @@ const ProjectsPage = () => {
       }
     },
     handleDeleteProject: async (project) => {
-      try {
-        const id = project.id
-        await axios.put(`${PROJECTS_ROUTE}/${id}/delete`)
-        setProjectsUpdate(true)
-        messages.deletedSuccess()
-      } catch (error) {
-        setError(error)
-        eventHandlers.handleOpenResult()
-      }
+      const id = project.id
+      await axios
+        .put(`${PROJECTS_ROUTE}/${id}/delete`)
+        .then((response) => {
+          setProjectsUpdate(true)
+          messages.restoredSuccess()
+        })
+        .catch((error) => {
+          setError(error)
+          eventHandlers.handleOpenResult()
+        })
     },
     handleRestoreProject: async (project) => {
-      try {
-        const id = project.id
-        const name = project.name
-        await axios.put(`${PROJECTS_ROUTE}/${id}/restore`)
-        setProjectsUpdate(true)
-        messages.restoredSuccess(name)
-      } catch (error) {
-        setError(error)
-        eventHandlers.handleOpenResult()
-      }
+      const id = project.id
+      await axios
+        .put(`${PROJECTS_ROUTE}/${id}/restored`)
+        .then((response) => {
+          setProjectsUpdate(true)
+          messages.restoredSuccess()
+        })
+        .catch((error) => {
+          setError(error)
+          eventHandlers.handleOpenResult()
+        })
     },
     handleFilterChange: (value) => {
       setSelectedType(value)
@@ -196,34 +210,19 @@ const ProjectsPage = () => {
 
   // message
   const messages = {
-    addSuccess: (name) => {
-      messageApi.open({
-        type: 'success',
-        content: `${name} saved successfully`,
-        duration: 5
-      })
-    },
-    editSuccess: (name) => {
-      messageApi.open({
-        type: 'success',
-        content: `${name} updated successfully`,
-        duration: 5
-      })
-    },
-    deletedSuccess: () => {
-      messageApi.open({
-        type: 'success',
-        content: 'deleted successfully',
-        duration: 5
-      })
-    },
-    restoredSuccess: (name) => {
-      messageApi.open({
-        type: 'success',
-        content: `${name} restored successfully`,
-        duration: 5
-      })
-    }
+    addSuccess: (name) => showMessage('success', `${name} saved successfully`),
+    editSuccess: (name) =>
+      showMessage('success', `${name} updated successfully`),
+    deletedSuccess: () => showMessage('success', 'Deleted successfully'),
+    restoredSuccess: () => showMessage('success', 'Restored successfully')
+  }
+
+  const showMessage = (type, content) => {
+    messageApi.open({
+      type,
+      content,
+      duration: 5
+    })
   }
 
   // filters
@@ -269,6 +268,12 @@ const ProjectsPage = () => {
     }
   }
 
+  const filterActivity = (value) => {
+    setActivities(
+      allProjects.filter((project) => project.activity.id === value)
+    )
+  }
+
   const filterProps = {
     items: filters,
     onClick: (value) => {
@@ -284,15 +289,16 @@ const ProjectsPage = () => {
       sorter: (a, b) => a.id - b.id
     },
     {
-      title: 'project',
-      dataIndex: 'name'
+      title: 'Name',
+      dataIndex: 'name',
+      sorter: (a, b) => a.name - b.name
     },
     {
-      title: 'project',
-      dataIndex: 'name'
+      title: 'Code',
+      dataIndex: 'code'
     },
     {
-      title: 'type',
+      title: 'Type',
       dataIndex: 'type',
       align: 'center'
     },
@@ -309,73 +315,38 @@ const ProjectsPage = () => {
     }
   ]
 
-  const projectRows = projects?.map((project, key) => {
-    return {
-      key,
-      id: project.id,
-      name: (
-        <div className="flex gap-4 items-center">
-          <Avatar letter="D" size="large">
-            <p className="text-lg">{project.name[0]}</p>
-          </Avatar>
-          <div className="flex flex-col">
-            <Text>{project.name}</Text>
-          </div>
-        </div>
-      ),
-      type: (
-        <Tag bordered={false} color={project.type.color}>
-          {project.type.name}
-        </Tag>
-      ),
-      joinDate: dayjs(project.join_date).add(1, 'day').format('MMM, DD YYYY'),
-      firstIn: project.first_in
-        ? dayjs(project.first_in).add(1, 'day').format('HH:mm')
-        : 'No hour',
-      lastOut: project.last_aut
-        ? dayjs(project.last_aut).add(1, 'day').format('HH:mm')
-        : 'No hour',
-      actions: project.is_deleted
-        ? (
-        <Popconfirm
-          title={`Restore ${project.name}`}
-          description="Are you sure you want to restore this project?"
-          onConfirm={() => eventHandlers.handleRestoreproject(project)}
-          okType="danger"
-          placement="topLeft"
-          okText="Si"
-          cancelText="No"
-        >
-          <Button
-            type="text"
-            icon={<MdKeyboardReturn title="Restore project" />}
-            className="text-green-500 flex items-center justify-center"
-          />
-        </Popconfirm>
-          )
-        : (
-        <div className="flex justify-center">
-          <Button
-            type="text"
-            icon={<MdRemoveRedEye title="View project" />}
-            className="text-blue-500 flex items-center justify-center"
-            onClick={() => eventHandlers.handleOpenProject(project)}
-            disabled={project.is_deleted}
-          />
-          <Button
-            type="text"
-            icon={<MdEdit title="Edit project" />}
-            className="text-green-500 flex items-center justify-center"
-            onClick={() => {
-              eventHandlers.handleEditProject(project)
-              setAction('edit')
-            }}
-            disabled={project.is_deleted}
-          />
+  const projectRows = useMemo(() => {
+    return projects?.map((project, key) => {
+      return {
+        key,
+        id: project.id,
+        name: project.name,
+        code: project.code,
+        type: (
+          <Tag bordered={false} color={project.type.color}>
+            {project.type.name}
+          </Tag>
+        ),
+        activities:
+          project.activities.length > 0
+            ? (
+            <div className="flex justify-start gap-4">
+              {project.activities.map((activity) => (
+                <Tag bordered={false} color={activity.color}>
+                  {activity.code}
+                </Tag>
+              ))}
+            </div>
+              )
+            : (
+                'No activities'
+              ),
+        actions: project.is_deleted
+          ? (
           <Popconfirm
-            title={`Delete ${project.name}`}
-            description="Are you sure to delete this project?"
-            onConfirm={() => eventHandlers.handleDeleteProject(project)}
+            title={`Restore ${project.name}`}
+            description="Are you sure you want to restore this project?"
+            onConfirm={() => eventHandlers.handleRestoreProject(project)}
             okType="danger"
             placement="topLeft"
             okText="Si"
@@ -383,15 +354,51 @@ const ProjectsPage = () => {
           >
             <Button
               type="text"
-              icon={<MdDelete title="Delete project" />}
-              className="text-red-500 flex items-center justify-center"
-              disabled={project.is_deleted}
+              icon={<MdKeyboardReturn title="Restore project" />}
+              className="text-green-500 flex items-center justify-center"
             />
           </Popconfirm>
-        </div>
-          )
-    }
-  })
+            )
+          : (
+          <div className="flex justify-center">
+            <Button
+              type="text"
+              icon={<MdRemoveRedEye title="View project" />}
+              className="text-blue-500 flex items-center justify-center"
+              onClick={() => eventHandlers.handleOpenProject(project)}
+              disabled={project.is_deleted}
+            />
+            <Button
+              type="text"
+              icon={<MdEdit title="Edit project" />}
+              className="text-green-500 flex items-center justify-center"
+              onClick={() => {
+                eventHandlers.handleEditProject(project)
+                setAction('edit')
+              }}
+              disabled={project.is_deleted}
+            />
+            <Popconfirm
+              title={`Delete ${project.name}`}
+              description="Are you sure to delete this project?"
+              onConfirm={() => eventHandlers.handleDeleteProject(project)}
+              okType="danger"
+              placement="topLeft"
+              okText="Si"
+              cancelText="No"
+            >
+              <Button
+                type="text"
+                icon={<MdDelete title="Delete project" />}
+                className="text-red-500 flex items-center justify-center"
+                disabled={project.is_deleted}
+              />
+            </Popconfirm>
+          </div>
+            )
+      }
+    })
+  }, [projects])
 
   return (
     <>
@@ -414,27 +421,30 @@ const ProjectsPage = () => {
         >
           Add project
         </Button>
-        <div className="mb-4 flex justify-end">
+        <div className="flex mb-4 gap-4 justify-end">
           <Search
             text="Search project"
             options={allProjects}
             update={setProjectsUpdate}
             onSearch={eventHandlers.handleSearchChange}
           />
-          <div className="flex justify-end">
-            <Dropdown
-              title={selectedTypeName}
-              filters={filterProps}
-            ></Dropdown>
-          </div>
+          <Select
+            placeholder="Select activity"
+            value={activity}
+            options={activities}
+            handleSelect={eventHandlers.handleActivitySelect}
+          />
+          <Dropdown title={selectedTypeName} filters={filterProps}></Dropdown>
         </div>
       </div>
-      <Table
-        columns={columns}
-        data={projectRows || []}
-        locale={{ emptyText: 'No projects' }}
-        loading={loading}
-      />
+      <Suspense fallback={<SkeletonTable />}>
+        <Table
+          columns={columns}
+          data={projectRows}
+          locale={{ emptyText: 'No projects' }}
+          loading={loading}
+        />
+      </Suspense>
       <Drawer
         title="View project"
         placement="right"
@@ -454,7 +464,7 @@ const ProjectsPage = () => {
         <FormPage
           action={action}
           project={project}
-          setproject={eventHandlers.handleSetProject}
+          setProject={eventHandlers.handleSetProject}
           updateValidation={eventHandlers.handleProjectValidation}
           handleCancel={clearModal}
         />

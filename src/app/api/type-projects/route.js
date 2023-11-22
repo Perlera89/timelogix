@@ -16,7 +16,7 @@ export async function GET () {
 export async function POST (restTypeProject) {
   const typeProjectData = await restTypeProject.json()
 
-  const typeTimeOff = await prisma.type_TimeOff.create({
+  const typeTimeOff = await prisma.type_Project.create({
     data: {
       name: typeProjectData.name,
       color: typeProjectData.color,

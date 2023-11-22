@@ -39,17 +39,17 @@ const SiderPage = ({ collapsed }) => {
       <RiTimeFill />
     ),
     getItem(
-      <Link href="/activities">Activities</Link>,
-      'activities',
-      <BsTagFill />
-    ),
-    getItem(
       <Link href="/projects">Projects</Link>,
       'projects',
       <GoFileDirectoryFill />
     ),
     getItem(
-      <Link href="/timeoff">Time Off</Link>,
+      <Link href="/activities">Activities</Link>,
+      'activities',
+      <BsTagFill />
+    ),
+    getItem(
+      <Link href="/timeoffs">Time Offs</Link>,
       'timeoff',
       <RiSuitcase2Fill />
     ),

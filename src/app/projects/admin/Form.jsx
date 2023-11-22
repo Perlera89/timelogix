@@ -1,39 +1,40 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
-import { EMPLOYEES_ROUTE } from '@/utils/apiRoutes'
+import { TYPE_PROJECTS_ROUTE } from '@/utils/apiRoutes'
+import { message } from 'antd'
 
 //   components
+import SelectType from '@/components/entry/SelectCustom'
 import InputText from '@/components/entry/InputText'
 import Input from '@/components/entry/Input'
-import ColorPicker from '@/components/entry/ColorPicker'
-import MultipleSelect from '@/components/entry/MultipleSelect'
-import Textarea from '@/components/entry/Textarea'
 import Badge from '@/components/common/Badge'
 import Result from '@/components/common/Result'
 
-const AdminActivity = ({
+const Adminproject = ({
   action,
-  activity,
-  setActivity,
+  project,
+  setProject,
   updateValidation,
   handleCancel
 }) => {
   // states
   const [name, setName] = useState(null)
   const [code, setCode] = useState(null)
-  const [description, setDescription] = useState(null)
-  const [employeesData, setEmployeesData] = useState(null)
-  const [employees, setEmployees] = useState(null)
-  const [color, setColor] = useState('#606060')
+  const [types, setTypes] = useState([])
+  const [type, setType] = useState(null)
+  const [typesUpdate, setTypesUpdate] = useState(false)
+  const [typeName, setTypeName] = useState(null)
+  const [selectedColor, setSelectedColor] = useState('#606060')
   const [error, setError] = useState('')
   const [openResult, setOpenResult] = useState(false)
+  const [messageApi, contextHolder] = message.useMessage()
 
   // handlers
   const eventHandlers = {
     handleNameChange: (value) => {
       setName(value.trimStart())
 
-      setActivity((prevData) => ({
+      setProject((prevData) => ({
         ...prevData,
         name: value.trimStart()
       }))
@@ -41,31 +42,46 @@ const AdminActivity = ({
     handleCodeChange: (value) => {
       setCode(event.target.value.trim())
 
-      setActivity((prevData) => ({
+      setProject((prevData) => ({
         ...prevData,
         code: event.target.value.trim()
       }))
     },
-    handleEmployeeSelect: (value) => {
-      setEmployees(value)
-      setActivity((prevData) => ({
+    handleTypeSelect: (value) => {
+      setType(value)
+      setProject((prevData) => ({
         ...prevData,
-        employees: value
+        type_id: value
       }))
     },
-    handleDescriptionChange: (event) => {
-      setDescription(event.target.value)
-      setActivity((prevData) => ({
-        ...prevData,
-        description: event.target.value
-      }))
+    handleTypeNameChange: (event) => {
+      setTypeName(event.target.value)
     },
     handleColorChange: (color) => {
-      setColor(color.toHexString())
-      setActivity((prevData) => ({
-        ...prevData,
-        color: color.toHexString()
-      }))
+      setSelectedColor(color.toHexString())
+    },
+    handleAddType: async (name) => {
+      const existingTypes = types.map((type) => type.label)
+      console.log('name', name)
+
+      if (existingTypes.includes(name)) {
+        isExistsMessage(name)
+      } else {
+        const type = {
+          name,
+          color: selectedColor
+        }
+        await axios
+          .post(TYPE_PROJECTS_ROUTE, type)
+          .then((res) => {
+            setTypesUpdate(true)
+            setTypeName(null)
+          })
+          .catch((error) => {
+            eventHandlers.handleOpenResult()
+            setError(error)
+          })
+      }
     },
     handleOpenResult: () => {
       setOpenResult(true)
@@ -75,27 +91,35 @@ const AdminActivity = ({
     }
   }
 
+  const isExistsMessage = (name) => {
+    messageApi.open({
+      type: 'warning',
+      content: `${name} already exists`,
+      duration: 5
+    })
+  }
+
   // validations
   const validations = {
     name: (value) => !!value && value.length >= 3,
     code: (value) => !!value && value.length >= 3,
-    employees: (value) => !!value
+    type: (value) => !!value
   }
 
   const [validation, setValidation] = useState({
     name: false,
     code: false,
-    employees: false
+    type: false
   })
 
-  // Actualizar el estado de valid  ación
+  // Actualizar el estado de validación
   useEffect(() => {
     setValidation({
       name: validations.name(name),
       code: validations.code(code),
-      employees: validations.employees(employees)
+      type: validations.type(type)
     })
-  }, [name, code, employees])
+  }, [name, code, type])
 
   // Verificar los campos
   useEffect(() => {
@@ -105,44 +129,48 @@ const AdminActivity = ({
 
   const resetForm = () => {
     setName(null)
+    setType(null)
     setCode(null)
-    setEmployees(null)
-    setColor(null)
   }
 
   useEffect(() => {
     resetForm()
   }, [handleCancel])
 
+  const fetchTypes = async () => {
+    await axios
+      .get(TYPE_PROJECTS_ROUTE)
+      .then((response) => {
+        const typesData = response.data
+        console.log('typesData', typesData)
+        setTypes(
+          typesData.map((type) => ({
+            value: type.id,
+            label: type.name
+          }))
+        )
+      })
+      .catch((error) => {
+        eventHandlers.handleOpenResult()
+        setError(error)
+      })
+  }
+
   // fetch data
   useEffect(() => {
+    const fetchData = async () => {
+      await fetchTypes()
+    }
+    fetchData()
+
     if (action === 'edit') {
-      setName(activity.name)
-      setCode(activity.code)
-      setEmployees(activity.employees.map((employee) => employee.id))
-      setColor(activity.color)
-      setDescription(activity.description)
+      setName(project.name)
+      setType(project.type.id)
+      setCode(project.code)
     }
+    setTypesUpdate(false)
+  }, [action, typesUpdate])
 
-    const fetchEmployees = async () => {
-      await axios
-        .get(EMPLOYEES_ROUTE)
-        .then((response) => {
-          setEmployeesData(
-            response.data.map((employee) => ({
-              value: employee.id,
-              label: employee.name
-            }))
-          )
-        })
-        .catch((error) => {
-          setError(error)
-          eventHandlers.handleOpenResult()
-        })
-    }
-
-    fetchEmployees()
-  }, [action, activity])
   return (
     <>
       <div className="flex flex-col gap-2 mt-4">
@@ -166,33 +194,30 @@ const AdminActivity = ({
             handleChange={eventHandlers.handleCodeChange}
           />
         </Badge>
-        <Badge title="Select group is required" validate={validation.employees}>
-          <MultipleSelect
-            placeholder="Select employees"
-            handleSelect={eventHandlers.handleEmployeeSelect}
-            options={employeesData}
+        <Badge title="Select type is required" validate={validation.type}>
+          <SelectType
+            placeholder="Select type"
+            placeholderInput="Enter type"
+            items={types}
+            value={type}
+            handleSelect={eventHandlers.handleTypeSelect}
+            inputValue={typeName}
+            handleInputChange={eventHandlers.handleTypeNameChange}
+            handleAdd={eventHandlers.handleAddType}
+            seletedColor={selectedColor}
+            handleColorChange={eventHandlers.handleColorChange}
           />
         </Badge>
-        <ColorPicker
-          selectedColor={color}
-          value={color}
-          handleColorChange={eventHandlers.handleColorChange}
-        />
-        <Textarea
-          placeholder="Description"
-          value={description}
-          handleChange={eventHandlers.handleDescriptionChange}
-        />
       </div>
       <Result
-        title={error ? error.request.statusText : null}
-        subtitle={error ? error.message : null}
-        error={error ? error.stack : null}
+        title={error ? error?.request?.statusText : null}
+        subtitle={error ? error?.message : null}
         open={openResult}
         handleClose={eventHandlers.handleCloseResult}
       />
+      {contextHolder}
     </>
   )
 }
 
-export default AdminActivity
+export default Adminproject

@@ -176,9 +176,52 @@ const Admintimeoff = ({
     resetForm()
   }, [handleCancel])
 
+  const fetchTypes = async () => {
+    await axios
+      .get(TYPE_TIMEOFFS_ROUTE)
+      .then((response) => {
+        const typesData = response.data
+        console.log('typesData', typesData)
+        setTypes(
+          typesData.map((type) => ({
+            value: type.id,
+            label: type.name
+          }))
+        )
+      })
+      .catch((error) => {
+        eventHandlers.handleOpenResult()
+        setError(error)
+      })
+  }
+  const fetchEmployees = async () => {
+    await axios
+      .get(EMPLOYEES_ROUTE)
+      .then((response) => {
+        const employeesData = response.data.filter(
+          (employee) => employee.is_deleted === false
+        )
+        setEmployees(
+          employeesData.map((employee) => ({
+            value: employee.id,
+            label: employee.name
+          }))
+        )
+      })
+      .catch((error) => {
+        eventHandlers.handleOpenResult()
+        setError(error)
+      })
+  }
+
   // fetch data
   useEffect(() => {
-    setTypesUpdate(false)
+    const fetchData = async () => {
+      await fetchTypes()
+      await fetchEmployees()
+    }
+    fetchData()
+
     if (action === 'edit') {
       setEmployee(timeoff.employee.id)
       setType(timeoff.type.id)
@@ -186,45 +229,8 @@ const Admintimeoff = ({
       setStatus(timeoff.status)
       setNote(timeoff.note)
     }
-    const fetchTypes = async () => {
-      await axios
-        .get(TYPE_TIMEOFFS_ROUTE)
-        .then((response) => {
-          const typesData = response.data
-          console.log('typesData', typesData)
-          setTypes(
-            typesData.map((type) => ({
-              value: type.id,
-              label: type.name
-            }))
-          )
-        })
-        .catch((error) => {
-          eventHandlers.handleOpenResult()
-          setError(error)
-        })
-    }
-    const fetchEmployees = async () => {
-      await axios
-        .get(EMPLOYEES_ROUTE)
-        .then((response) => {
-          const employeesData = response.data
-          setEmployees(
-            employeesData.map((employee) => ({
-              value: employee.id,
-              label: employee.name
-            }))
-          )
-        })
-        .catch((error) => {
-          eventHandlers.handleOpenResult()
-          setError(error)
-        })
-    }
-
-    fetchTypes()
-    fetchEmployees()
-  }, [action, typesUpdate, timeoff])
+    setTypesUpdate(false)
+  }, [action, typesUpdate])
 
   return (
     <>
@@ -287,8 +293,8 @@ const Admintimeoff = ({
         />
       </div>
       <Result
-        title={error ? error.request.statusText : null}
-        subtitle={error ? error.message : null}
+        title={error ? error?.request?.statusText : null}
+        subtitle={error ? error?.message : null}
         open={openResult}
         handleClose={eventHandlers.handleCloseResult}
       />

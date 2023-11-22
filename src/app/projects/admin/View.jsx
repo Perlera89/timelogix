@@ -1,41 +1,35 @@
-import React from 'react'
-import { Typography } from 'antd'
-
-import Avatar from '@/components/common/Avatar'
+import { Tag, Typography } from 'antd'
 
 const { Text, Title } = Typography
 
-const ViewEmployee = ({ activity }) => {
+const ViewProject = ({ project }) => {
   return (
     <>
       <div className="flex gap-4 items-center">
-        <Title level={4}>{activity.name}</Title>
+        <Title level={4}>{project.name}</Title>
       </div>
       <div className="flex gap-4 my-4">
         <Text>Code:</Text>
-        <Text type="secondary">{activity.code}</Text>
+        <Text type="secondary">{project.code}</Text>
+      </div>
+      <div className="flex gap-4 my-4">
+        <Text>Type:</Text>
+        <Tag bordered={false} color={project.type.color}>
+          {project.type.name}
+        </Tag>
       </div>
       <div className="flex flex-col gap-4 my-4">
-        <Text>Employees:</Text>
-        <div className="flex flex-col gap-2">
-          {activity.employees.map((employee) => (
-            <div className="flex gap-4 items-center">
-              <Avatar letter="D" size="large">
-                <p className="text-lg">{employee.name[0]}</p>
-              </Avatar>
-              <div className="flex flex-col">
-                <Text>{employee.name}</Text>
-              </div>
-            </div>
+        <Text>Activities:</Text>
+        <div className="flex gap-2">
+          {project.activities.map((activity) => (
+            <Tag bordered={false} color={activity.color}>
+              {activity.code}
+            </Tag>
           ))}
         </div>
-      </div>
-      <div className="flex flex-col">
-        <Text>Description: </Text>
-        <Text type="secondary">{activity.description}</Text>
       </div>
     </>
   )
 }
 
-export default ViewEmployee
+export default ViewProject

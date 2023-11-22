@@ -4,6 +4,7 @@ import prisma from '@/libs/prisma'
 export async function GET () {
   const getProjects = await prisma.project.findMany({
     include: {
+      activities: true,
       type: true
     }
   })
