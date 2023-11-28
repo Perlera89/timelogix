@@ -41,8 +41,7 @@ const ProjectsPage = () => {
   const [types, setTypes] = useState([])
   const [openProject, setOpenProject] = useState(false)
   const [openModal, setOpenModal] = useState(false)
-  const [selectedType, setSelectedType] = useState('all')
-  const [selectedTypeName, setSelectedTypeName] = useState('All')
+  const [statusValue, setStatusValue] = useState('all')
   const [action, setAction] = useState('add')
   const [isProjectValidated, setIsProjectValidated] = useState(false)
   const [clearModal, setClearModal] = useState(false)
@@ -59,6 +58,7 @@ const ProjectsPage = () => {
     await axios
       .get(PROJECTS_ROUTE)
       .then((response) => {
+        console.log('response.data', response.data)
         const projectsData = response.data.filter(
           (project) => project.is_deleted === false
         )
@@ -96,15 +96,6 @@ const ProjectsPage = () => {
     const fetchData = async () => {
       await fetchProjects()
       await fetchTypes()
-    }
-    setSelectedTypeName('All')
-
-    if (selectedType === 'all') {
-      setProjects(allProjects)
-    } else {
-      setProjects(
-        projects.filter((project) => project.type.id === selectedType)
-      )
     }
     fetchData()
   }, [projectsUpdate])
@@ -201,10 +192,6 @@ const ProjectsPage = () => {
           setError(error)
           eventHandlers.handleOpenResult()
         })
-    },
-    handleFilterChange: (value) => {
-      setSelectedType(value)
-      filterprojects(value)
     }
   }
 
@@ -226,59 +213,11 @@ const ProjectsPage = () => {
   }
 
   // filters
-  const filters = [
-    {
-      label: 'All',
-      key: 'all'
-    },
-    {
-      type: 'divider'
-    },
-    ...types.map((type) => ({
-      label: type.name,
-      key: type.id
-    })),
-    {
-      label: (
-        <span className="flex gap-1 items-center">
-          <MdDelete />
-          Deleted
-        </span>
-      ),
-      key: 'deleted',
-      danger: true
-    }
-  ]
-
-  const filterprojects = (key) => {
-    if (key === 'all') {
-      setProjectsUpdate(true)
-      setSelectedTypeName('All')
-      setProjects(allProjects)
-    } else if (key === 'deleted') {
-      setProjects(deletedProjects)
-      setSelectedTypeName('Deleted')
-    } else {
-      const filter = allProjects.filter(
-        (project) => project.type_id === Number(key)
-      )
-      setProjects(filter)
-      const typeFilter = types.find((type) => type.id === Number(key))
-      setSelectedTypeName(typeFilter.name)
-    }
-  }
-
   const filterActivity = (value) => {
+    setStatusValue('all')
     setActivities(
       allProjects.filter((project) => project.activity.id === value)
     )
-  }
-
-  const filterProps = {
-    items: filters,
-    onClick: (value) => {
-      eventHandlers.handleFilterChange(value.key)
-    }
   }
 
   const columns = [
@@ -332,7 +271,7 @@ const ProjectsPage = () => {
             ? (
             <div className="flex justify-start gap-4">
               {project.activities.map((activity) => (
-                <Tag bordered={false} color={activity.color}>
+                <Tag key={activity.id} bordered={false} color={activity.color}>
                   {activity.code}
                 </Tag>
               ))}
@@ -429,12 +368,32 @@ const ProjectsPage = () => {
             onSearch={eventHandlers.handleSearchChange}
           />
           <Select
+            bordered={false}
             placeholder="Select activity"
             value={activity}
             options={activities}
             handleSelect={eventHandlers.handleActivitySelect}
           />
-          <Dropdown title={selectedTypeName} filters={filterProps}></Dropdown>
+          <Select
+            bordered={false}
+            value={statusValue}
+            placeholder="All"
+            options={[
+              {
+                label: 'All',
+                value: 'all'
+              },
+              { label: 'Deleted', value: 'deleted' }
+            ]}
+            handleSelect={(value) => {
+              setStatusValue(value)
+              if (value === 'all') {
+                setProjects(allProjects)
+              } else {
+                setProjects(deletedProjects)
+              }
+            }}
+          />
         </div>
       </div>
       <Suspense fallback={<SkeletonTable />}>

@@ -1,18 +1,14 @@
-import React, { useState } from "react";
-import { Radio } from "antd";
+import { Radio } from 'antd'
 
-const App = ({value, options, handleChange
-}) => {
-
-
+const App = ({ value, options, handleChange }) => {
   return (
     <Radio.Group
-    className="flex"
+      className="flex"
       options={options}
       onChange={handleChange}
       value={value}
       optionType="button"
     />
-  );
-};
-export default App;
+  )
+}
+export default App

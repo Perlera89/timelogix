@@ -7,9 +7,9 @@ const App = ({ title, filters }) => (
     className="hover:bg-white/10 text-ghost-white flex justify-center items-center px-2 rounded-lg cursor-pointer transition-colors"
     menu={filters}
   >
-    <div className="flex gap-2 items-center">
+    <div className="flex gap-4 items-center">
       <p>{title}</p>
-      <DownOutlined />
+      <DownOutlined className='text-white/20' />
     </div>
   </Dropdown>
 )

@@ -1,7 +1,7 @@
-import { Card } from "antd";
+import { Card } from 'antd'
 
 // icons
-import { RiFilter3Fill } from "react-icons/ri";
+import { RiFilter3Fill } from 'react-icons/ri'
 
 const CardItem = ({ cardTitle, children, filterItems }) => {
   return (
@@ -17,12 +17,12 @@ const CardItem = ({ cardTitle, children, filterItems }) => {
         )
       }
       style={{
-        width: "100%",
+        width: '100%'
       }}
     >
       {children}
     </Card>
-  );
-};
+  )
+}
 
-export default CardItem;
+export default CardItem

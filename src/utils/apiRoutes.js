@@ -13,3 +13,5 @@ export const ACTIVITIES_ROUTE = `${ROOT}/activities`
 
 export const PROJECTS_ROUTE = `${ROOT}/projects`
 export const TYPE_PROJECTS_ROUTE = `${ROOT}/type-projects`
+
+export const CLOCKINS_ROUTE = `${ROOT}/clockins`

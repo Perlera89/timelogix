@@ -66,7 +66,7 @@ const TimeOffsPage = () => {
   const [employee, setEmployee] = useState(null)
   const [openTimeOff, setOpenTimeOff] = useState(false)
   const [openModal, setOpenModal] = useState(false)
-  const [statusTitle, setStatusTitle] = useState('All')
+  const [statusValue, setStatusValue] = useState('all')
   const [action, setAction] = useState(timeoffAction.add)
   const [isTimeOffValidated, setIsTimeOffValidated] = useState(false)
   const [clearModal, setClearModal] = useState(false)
@@ -83,7 +83,6 @@ const TimeOffsPage = () => {
   // fetch data
   // -- timeoff
   const fetchTimeOffs = async () => {
-    setTimeOffsUpdate(false)
     await axios
       .get(TIMEOFFS_ROUTE)
       .then((response) => {
@@ -155,6 +154,7 @@ const TimeOffsPage = () => {
 
     fetchData()
     filterTimeOffsByDate(dateFilter)
+    setTimeOffsUpdate(false)
   }, [timeoffsUpdate])
 
   useEffect(() => {
@@ -394,40 +394,8 @@ const TimeOffsPage = () => {
     setTimeOffs(timeoffsFiltered)
   }
 
-  const filters = [
-    {
-      label: 'All',
-      key: 'all'
-    },
-    {
-      label: (
-        <span className="flex gap-1 items-center">
-          <MdDelete />
-          Deleted
-        </span>
-      ),
-      key: 'deleted',
-      danger: true
-    }
-  ]
-
-  const filterState = {
-    items: filters,
-    onClick: (value) => {
-      setEmployee(null)
-      setType(null)
-      if (value.key === 'all') {
-        setTimeOffs(allTimeOffs)
-        setStatusTitle('All')
-      } else if (value.key === 'deleted') {
-        setTimeOffs(deletedTimeOffs)
-        setStatusTitle('Deleted')
-      }
-    }
-  }
-
   const filterProps = (value, filter) => {
-    setStatusTitle('All')
+    setStatusValue('all')
     let filteredTimeoffs = []
     if (filter === 'type') {
       setEmployee(null)
@@ -643,7 +611,7 @@ const TimeOffsPage = () => {
       <div className="mb-4 flex gap-4">
         <Card
           cardTitle="Total timeoffs"
-          filterItems={() => handleFilterCard('all')}
+          filterItems={timeoffsCount > 0 ? () => handleFilterCard('all') : null}
         >
           <div className="grid gap-2">
             <FaUsers className="text-5xl text-blue-500 bg-blue-500/10 p-2.5 rounded-xl" />
@@ -652,7 +620,9 @@ const TimeOffsPage = () => {
         </Card>
         <Card
           cardTitle="Total approved"
-          filterItems={() => handleFilterCard('success')}
+          filterItems={
+            successCount > 0 ? () => handleFilterCard('success') : null
+          }
         >
           <div className="grid gap-2">
             <MdCheck className="text-5xl text-green-500 bg-green-500/10 p-3 rounded-xl" />
@@ -661,7 +631,9 @@ const TimeOffsPage = () => {
         </Card>
         <Card
           cardTitle="Total pending"
-          filterItems={() => handleFilterCard('processing')}
+          filterItems={
+            processCount > 0 ? () => handleFilterCard('processing') : null
+          }
         >
           <div className="grid gap-2">
             <PiArrowsClockwise className="text-5xl text-blue-500 bg-blue-500/10 p-2.5 rounded-xl" />
@@ -670,7 +642,9 @@ const TimeOffsPage = () => {
         </Card>
         <Card
           cardTitle="Total rejected"
-          filterItems={() => handleFilterCard('reject')}
+          filterItems={
+            rejectCount > 0 ? () => handleFilterCard('reject') : null
+          }
         >
           <div className="grid gap-2">
             <MdClose className="text-5xl text-red-500 bg-red-500/10 p-2.5 rounded-xl" />
@@ -689,7 +663,7 @@ const TimeOffsPage = () => {
         >
           Add timeoff
         </Button>
-        <div className="flex mb-4 gap-4 justify-end">
+        <div className="flex mb-4 ml-4 gap-4 justify-end">
           <Search
             text="Search timeoff"
             options={allTimeOffs}
@@ -697,25 +671,47 @@ const TimeOffsPage = () => {
             onSearch={eventHandlers.handleSearchChange}
           />
           <Select
+            bordered={false}
             placeholder="Select type"
             value={type}
             options={typeTimeoffs}
             handleSelect={eventHandlers.handleTypeSelect}
           />
           <Select
+            bordered={false}
             placeholder="Select employee"
             value={employee}
             options={employees}
             handleSelect={eventHandlers.handleEmployeeSelect}
           />
           <DatePicker
+            bordered={false}
             className="w-full min-w-[120px]"
             value={date}
             onChange={eventHandlers.handleDateChange}
             inputReadOnly
           />
           <Dropdown title={dateFilterName} filters={dateFiltersProps} />
-          <Dropdown title={statusTitle} filters={filterState} />
+          <Select
+            bordered={false}
+            value={statusValue}
+            placeholder="All"
+            options={[
+              {
+                label: 'All',
+                value: 'all'
+              },
+              { label: 'Deleted', value: 'deleted' }
+            ]}
+            handleSelect={(value) => {
+              setStatusValue(value)
+              if (value === 'all') {
+                setTimeOffs(allTimeOffs)
+              } else {
+                setTimeOffs(deletedTimeOffs)
+              }
+            }}
+          />
         </div>
       </div>
       <Suspense fallback={<SkeletonTable />}>

@@ -139,6 +139,7 @@ const AdminEmployee = ({
     setName(null)
     setGroup(null)
     setNote(null)
+    setActivity(null)
   }
 
   useEffect(() => {
@@ -207,6 +208,7 @@ const AdminEmployee = ({
             placeholder="Name"
             value={name}
             handleChange={eventHandlers.handleNameChange}
+            focus={true}
           />
         </Badge>
         <Badge title="Select group is required" validate={validation.group}>

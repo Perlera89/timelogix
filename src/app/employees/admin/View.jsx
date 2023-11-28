@@ -25,7 +25,18 @@ const ViewEmployee = ({ employee }) => {
           {employee.group.name}
         </Tag>
       </div>
-
+      <div className="flex gap-4 my-4">
+        <Text>Activity:</Text>
+        {employee.activity
+          ? (
+          <Tag bordered={false} color={employee.activity?.color}>
+            {employee.activity?.code}
+          </Tag>
+            )
+          : (
+          <Text type="secondary">No activity</Text>
+            )}
+      </div>
       <div className="flex gap-4 my-4">
         <Text>Join Date:</Text>
         <Text type="secondary">

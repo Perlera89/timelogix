@@ -9,7 +9,6 @@ import Table from '@/components/common/Table'
 import Search from '@/components/entry/Search'
 import Select from '@/components/entry/Select'
 import RadioButton from '@/components/entry/RadioButton'
-import Dropdown from '@/components/common/Dropdown'
 import Card from '@/components/common/CardItem'
 import Modal from '@/components/Modal'
 import Drawer from '@/components/common/DrawerItem'
@@ -52,7 +51,7 @@ const HolidaysPage = () => {
   const [typeHolidaysCount, setTypeHolidaysCount] = useState(0)
   const [openHoliday, setOpenHoliday] = useState(false)
   const [openModal, setOpenModal] = useState(false)
-  const [statusTitle, setStatusTitle] = useState('All')
+  const [statusValue, setStatusValue] = useState('all')
   const [action, setAction] = useState(holidayAction.add)
   const [error, setError] = useState('')
   const [openResult, setOpenResult] = useState(false)
@@ -116,7 +115,6 @@ const HolidaysPage = () => {
       await fetchTypeHolidays()
     }
     fetchData()
-    setStatusTitle('All')
     setHolidaysUpdate(false)
   }, [holidaysUpdate])
 
@@ -241,30 +239,13 @@ const HolidaysPage = () => {
 
   // filters
   const filterProps = (value) => {
-    setStatusTitle('All')
+    setStatusValue('All')
     const filteredHolidays = allHolidays.filter(
       (holiday) => holiday.type.id === value
     )
 
     setHolidays(filteredHolidays)
   }
-
-  const filters = [
-    {
-      label: 'All',
-      key: 'all'
-    },
-    {
-      label: (
-        <span className="flex gap-1 items-center">
-          <MdDelete />
-          Deleted
-        </span>
-      ),
-      key: 'deleted',
-      danger: true
-    }
-  ]
 
   const yearOptions = [
     {
@@ -280,20 +261,6 @@ const HolidaysPage = () => {
       value: '2024'
     }
   ]
-
-  const filterState = {
-    items: filters,
-    onClick: (value) => {
-      setType(null)
-      if (value.key === 'all') {
-        setHolidays(allHolidays)
-        setStatusTitle('All')
-      } else if (value.key === 'deleted') {
-        setHolidays(deletedHolidays)
-        setStatusTitle('Deleted')
-      }
-    }
-  }
 
   const columns = [
     {
@@ -341,8 +308,7 @@ const HolidaysPage = () => {
             {holiday.type.name}
           </Tag>
         ),
-        startDate: dayjs(holiday.start_date)
-          .format('MMM, DD YYYY'),
+        startDate: dayjs(holiday.start_date).format('MMM, DD YYYY'),
         endDate: holiday.end_date
           ? dayjs(holiday.end_date).format('MMM, DD YYYY')
           : 'No date',
@@ -440,18 +406,38 @@ const HolidaysPage = () => {
             options={allHolidays}
             onSearch={eventHandlers.handleSearchChange}
           />
-          <Select
-            placeholder="Select group"
-            value={type}
-            options={typeHolidays}
-            handleSelect={eventHandlers.handleTypeSelect}
-          />
           <RadioButton
             value={year}
             options={yearOptions}
             handleChange={eventHandlers.handleYearChange}
           />
-          <Dropdown title={statusTitle} filters={filterState} />
+          <Select
+            bordered={false}
+            placeholder="Select group"
+            value={type}
+            options={typeHolidays}
+            handleSelect={eventHandlers.handleTypeSelect}
+          />
+          <Select
+            bordered={false}
+            value={statusValue}
+            placeholder="All"
+            options={[
+              {
+                label: 'All',
+                value: 'all'
+              },
+              { label: 'Deleted', value: 'deleted' }
+            ]}
+            handleSelect={(value) => {
+              setStatusValue(value)
+              if (value === 'all') {
+                setHolidays(allHolidays)
+              } else {
+                setHolidays(deletedHolidays)
+              }
+            }}
+          />
         </div>
       </div>
       <Suspense fallback={<SkeletonTable />}>

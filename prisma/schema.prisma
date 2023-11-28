@@ -3,141 +3,112 @@ generator client {
 }
 
 datasource db {
-  provider  = "mysql"
-  url       = env("POSTGRESQL_URL")
+  provider = "mysql"
+  url      = env("POSTGRESQL_URL")
   // url       = env("POSTGRES_PRISMA_URL")
   // directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
 model Employee {
-  id                Int      @id @default(autoincrement())
-  activity_id       Int?
-  group_id            Int?  
-  name              String
-  join_date         DateTime? @default(now())
-  first_in          DateTime? @db.Time()
-  last_out          DateTime? @db.Time()
-  note              String @default("Empty")
-  timeoff           TimeOff[]
-  is_deleted        Boolean   @default(false)
-  group             Group? @relation(fields: [group_id], references: [id])
-  activity          Activity? @relation(fields: [activity_id], references: [id])
+  id          Int       @id @default(autoincrement())
+  activity_id Int?
+  group_id    Int?
+  name        String
+  join_date   DateTime? @default(now())
+  first_in    DateTime? @db.Time()
+  last_out    DateTime? @db.Time()
+  note        String    @default("Empty")
+  timeoff     TimeOff[]
+  clockins    Clock_In[]
+  is_deleted  Boolean   @default(false)
+  group       Group?    @relation(fields: [group_id], references: [id])
+  activity    Activity? @relation(fields: [activity_id], references: [id])
 }
 
 model Group {
-  id      Int      @id @default(autoincrement())
-  name    String
-  color   String @default("#606060")
-  is_deleted Boolean   @default(false) 
-  employees Employee[] 
+  id         Int        @id @default(autoincrement())
+  name       String
+  color      String     @default("#606060")
+  is_deleted Boolean    @default(false)
+  employees  Employee[]
 }
 
 model Holiday {
-  id         Int      @id @default(autoincrement())
-  type_id Int?
+  id         Int           @id @default(autoincrement())
+  type_id    Int?
   name       String
-  start_date DateTime? @db.Date
-  end_date   DateTime? @db.Date
-  is_deleted        Boolean   @default(false)
-  type Type_Holiday? @relation(fields: [type_id], references: [id]) 
+  start_date DateTime?     @db.Date
+  end_date   DateTime?     @db.Date
+  is_deleted Boolean       @default(false)
+  type       Type_Holiday? @relation(fields: [type_id], references: [id])
 }
 
 model Type_Holiday {
-  id      Int      @id @default(autoincrement())
-  name    String
-  color   String?
-  is_deleted Boolean   @default(false) 
-  holidays Holiday[] 
-}
-
-model Schedule {
-  id            Int             @id @default(autoincrement())
-  name          String
-  start_time    DateTime        @db.Time(6)
-  end_time      DateTime        @db.Time(6)
-  note          String
-  is_deleted        Boolean   @default(false)
-  work_schedules Work_Schedule[]
-}
-
-model Work {
-  id            Int             @id @default(autoincrement())
-  name          String
-  is_deleted        Boolean   @default(false)
-  work_schedules Work_Schedule[]
+  id         Int       @id @default(autoincrement())
+  name       String
+  color      String?
+  is_deleted Boolean   @default(false)
+  holidays   Holiday[]
 }
 
 model Activity {
-  id                Int @id @default(autoincrement())
-  project_id        Int?
-  name              String
-  code              String
-  description       String @default("Empty")
-  color             String @default("#606060")
-  is_deleted        Boolean   @default(false)
-  clock_in          Clock_In[]
-  employees         Employee[]
-  project    Project?  @relation(fields: [project_id], references: [id])
-
+  id          Int        @id @default(autoincrement())
+  project_id  Int?
+  name        String
+  code        String
+  description String     @default("Empty")
+  color       String     @default("#606060")
+  is_deleted  Boolean    @default(false)
+  employees   Employee[]
+  project     Project?   @relation(fields: [project_id], references: [id])
 }
 
 model Project {
-  id           Int        @id @default(autoincrement())
-  type_id     Int?
-  name         String
-  code         String
-  is_deleted        Boolean   @default(false)
-  clock_ins     Clock_In[]
+  id         Int           @id @default(autoincrement())
+  type_id    Int?
+  name       String
+  code       String
+  is_deleted Boolean       @default(false)
   activities Activity[]
-  type    Type_Project?  @relation(fields: [type_id], references: [id])
+  type       Type_Project? @relation(fields: [type_id], references: [id])
 }
 
 model Type_Project {
-  id      Int      @id @default(autoincrement())
-  name    String
-  color   String @default("#606060")
-  is_deleted Boolean   @default(false) 
-  projects Project[] 
+  id         Int       @id @default(autoincrement())
+  name       String
+  color      String    @default("#606060")
+  is_deleted Boolean   @default(false)
+  projects   Project[]
 }
 
 model TimeOff {
-  id              Int               @id @default(autoincrement())
-  employee_id      Int
-  type_id Int
-  start_date      DateTime          @db.Date
-  end_date        DateTime?          @db.Date
-  status          String
-  note            String? @default("Empty")
-  is_deleted        Boolean   @default(false)
-  employee         Employee           @relation(fields: [employee_id], references: [id])
-  type Type_TimeOff? @relation(fields: [type_id], references: [id]) 
-
+  id          Int           @id @default(autoincrement())
+  employee_id Int
+  type_id     Int
+  start_date  DateTime      @db.Date
+  end_date    DateTime?     @db.Date
+  status      String
+  note        String?       @default("Empty")
+  is_deleted  Boolean       @default(false)
+  employee    Employee      @relation(fields: [employee_id], references: [id])
+  type        Type_TimeOff? @relation(fields: [type_id], references: [id])
 }
 
 model Type_TimeOff {
-  id      Int      @id @default(autoincrement())
-  name    String
-  color   String?
-  is_deleted Boolean   @default(false) 
-  timeOffs TimeOff[] 
-}
-
-model Work_Schedule {
-  id          Int      @id @default(autoincrement())
-  schedule_id Int
-  work_id     Int
-  schedule    Schedule @relation(fields: [schedule_id], references: [id])
-  work        Work     @relation(fields: [work_id], references: [id])
+  id         Int       @id @default(autoincrement())
+  name       String
+  color      String?
+  is_deleted Boolean   @default(false)
+  timeOffs   TimeOff[]
 }
 
 model Clock_In {
-  id           Int       @id @default(autoincrement())
-  activity_id Int
-  Project_id   Int
-  start_time   DateTime  @db.Time(6)
-  date         DateTime  @db.Date
-  note         String
-  is_deleted        Boolean   @default(false)
-  activity    Activity @relation(fields: [activity_id], references: [id])
-  Project      Project   @relation(fields: [Project_id], references: [id])
+  id         Int      @id @default(autoincrement())
+  employee_id Int
+  start_time DateTime
+  end_time DateTime?
+  date       DateTime @db.Date
+  note       String?
+  is_deleted Boolean  @default(false)
+  employee Employee @relation(fields: [employee_id], references: [id])
 }

@@ -1,4 +1,3 @@
-import React from 'react'
 import { Select, Typography } from 'antd'
 
 const { Text } = Typography
@@ -9,9 +8,18 @@ const filterOption = (input, option) => {
   return labelValue.toLowerCase().includes(input.toLowerCase())
 }
 
-const App = ({ value, placeholder, options, handleSelect }) => (
+const App = ({
+  value,
+  placeholder,
+  options,
+  handleSelect,
+  disabled,
+  bordered
+}) => (
   <Select
+    bordered={bordered}
     showSearch
+    disabled={disabled}
     allowClear
     value={value}
     onSelect={handleSelect}

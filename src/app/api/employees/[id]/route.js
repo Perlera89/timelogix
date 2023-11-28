@@ -4,8 +4,6 @@ import prisma from '@/libs/prisma'
 export async function PUT (restEmployee, { params }) {
   try {
     const employeeData = await restEmployee.json()
-
-    // Construir el objeto de datos basado en los campos que se proporcionan
     const data = {
       name: employeeData.name,
       group: {
@@ -16,8 +14,6 @@ export async function PUT (restEmployee, { params }) {
       note: employeeData.note,
       is_deleted: false
     }
-
-    // Verificar si activity_id está presente antes de incluirlo en la consulta
     if (employeeData.activity_id) {
       data.activity = {
         connect: {

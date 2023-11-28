@@ -6,7 +6,6 @@ import { useEffect, useState, useMemo, Suspense } from 'react'
 
 // components
 import Table from '@/components/common/Table'
-import Dropdown from '@/components/common/Dropdown'
 import Search from '@/components/entry/Search'
 import Select from '@/components/entry/Select'
 import Card from '@/components/common/CardItem'
@@ -52,11 +51,11 @@ const EmployeesPage = () => {
   const [openEmployee, setOpenEmployee] = useState(false)
   const [openModal, setOpenModal] = useState(false)
   const [action, setAction] = useState('add')
-  const [statusTitle, setStatusTitle] = useState('All')
   const [isEmployeeValidated, setIsEmployeeValidated] = useState(false)
   const [clearModal, setClearModal] = useState(false)
-  const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
+  const [statusValue, setStatusValue] = useState('all')
+  const [error, setError] = useState('')
   const [openResult, setOpenResult] = useState(false)
 
   const [messageApi, contextHolder] = message.useMessage()
@@ -111,8 +110,11 @@ const EmployeesPage = () => {
     await axios
       .get(ACTIVITIES_ROUTE)
       .then((response) => {
+        const activitiesData = response.data.filter(
+          (activity) => activity.is_deleted === false
+        )
         setActivities(
-          response.data.map((activity) => ({
+          activitiesData.map((activity) => ({
             value: activity.id,
             label: activity.code
           }))
@@ -249,7 +251,7 @@ const EmployeesPage = () => {
 
   // filters
   const filterProps = (value, filter) => {
-    setStatusTitle('All')
+    setStatusValue('all')
     let filteredEmployees = []
     if (filter === 'group') {
       setActivity(null)
@@ -264,38 +266,6 @@ const EmployeesPage = () => {
     }
 
     setEmployees(filteredEmployees)
-  }
-
-  const filters = [
-    {
-      label: 'All',
-      key: 'all'
-    },
-    {
-      label: (
-        <span className="flex gap-1 items-center">
-          <MdDelete />
-          Deleted
-        </span>
-      ),
-      key: 'deleted',
-      danger: true
-    }
-  ]
-
-  const filterState = {
-    items: filters,
-    onClick: (value) => {
-      setActivity(null)
-      setGroup(null)
-      if (value.key === 'all') {
-        setEmployees(allEmployees)
-        setStatusTitle('All')
-      } else if (value.key === 'deleted') {
-        setEmployees(deletedEmployees)
-        setStatusTitle('Deleted')
-      }
-    }
   }
 
   const columns = [
@@ -318,13 +288,6 @@ const EmployeesPage = () => {
       title: 'Activity',
       dataIndex: 'activity',
       align: 'center'
-    },
-    {
-      title: 'Join date',
-      dataIndex: 'joinDate',
-      width: '10%',
-      align: 'center',
-      sorter: (a, b) => a.joinDate - b.joinDate
     },
     {
       title: 'First in',
@@ -373,9 +336,6 @@ const EmployeesPage = () => {
           : (
               'No activity'
             ),
-        joinDate: dayjs(employee.join_date)
-          .add(1, 'day')
-          .format('MMM, DD YYYY'),
         firstIn: employee.first_in
           ? dayjs(employee.first_in).format('HH:mm')
           : 'No hour',
@@ -477,18 +437,39 @@ const EmployeesPage = () => {
             onSearch={eventHandlers.handleSearchChange}
           />
           <Select
+            bordered={false}
             placeholder="Select group"
             value={group}
             options={groups}
             handleSelect={eventHandlers.handleGroupSelect}
           />
           <Select
+            bordered={false}
             placeholder="Select activity"
             value={activity}
             options={activities}
             handleSelect={eventHandlers.handleActivitySelect}
           />
-          <Dropdown title={statusTitle} filters={filterState} />
+          <Select
+            bordered={false}
+            value={statusValue}
+            placeholder="All"
+            options={[
+              {
+                label: 'All',
+                value: 'all'
+              },
+              { label: 'Deleted', value: 'deleted' }
+            ]}
+            handleSelect={(value) => {
+              setStatusValue(value)
+              if (value === 'all') {
+                setEmployees(allEmployees)
+              } else {
+                setEmployees(deletedEmployees)
+              }
+            }}
+          />
         </div>
       </div>
       <Suspense fallback={<SkeletonTable />}>
@@ -524,8 +505,8 @@ const EmployeesPage = () => {
         />
       </Modal>
       <Result
-        title={error ? error.request.statusText : null}
-        subtitle={error ? error.message : null}
+        title={error ? error?.request?.statusText : null}
+        subtitle={error ? error?.message : null}
         error={error ? error.stack : null}
         open={openResult}
         handleClose={eventHandlers.handleCloseResult}

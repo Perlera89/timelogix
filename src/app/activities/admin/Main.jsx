@@ -5,7 +5,6 @@ import { Suspense, useEffect, useMemo, useState } from 'react'
 
 // components
 import Table from '@/components/common/Table'
-import Dropdown from '@/components/common/Dropdown'
 import Search from '@/components/entry/Search'
 import Select from '@/components/entry/Select'
 import Card from '@/components/common/CardItem'
@@ -26,7 +25,6 @@ import {
   MdDelete,
   MdKeyboardReturn
 } from 'react-icons/md'
-
 import {
   ACTIVITIES_ROUTE,
   EMPLOYEES_ROUTE,
@@ -41,7 +39,7 @@ const ActivitiesPage = () => {
   const [activitiesCount, setActivitiesCount] = useState(0)
   const [activitiesUpdate, setActivitiesUpdate] = useState(false)
   const [deletedActivities, setDeletedActivities] = useState([])
-  const [statusTitle, setStatusTitle] = useState('All')
+  const [statusValue, setStatusValue] = useState('all')
   const [employees, setEmployees] = useState(null)
   const [employee, setEmployee] = useState(null)
   const [projects, setProjects] = useState([])
@@ -62,7 +60,6 @@ const ActivitiesPage = () => {
   const fetchActivities = async () => {
     try {
       const response = await axios.get(ACTIVITIES_ROUTE)
-      console.log('response.data', response.data)
       const activitiesData = response.data.filter(
         (activity) => activity.is_deleted === false
       )
@@ -93,7 +90,6 @@ const ActivitiesPage = () => {
           label: employee.name
         }))
 
-        console.log('employeesData', employeesData)
         setEmployees(employeesData)
       })
       .catch((error) => {
@@ -254,7 +250,7 @@ const ActivitiesPage = () => {
   }
 
   const filterProps = (value, filter) => {
-    setStatusTitle('All')
+    setStatusValue('all')
     let filteredActivities = []
     if (filter === 'project') {
       setEmployee(null)
@@ -269,37 +265,6 @@ const ActivitiesPage = () => {
     }
 
     setEmployees(filteredActivities)
-  }
-
-  const filters = [
-    {
-      label: 'All',
-      key: 'all'
-    },
-    {
-      label: (
-        <span className="flex gap-1 items-center">
-          <MdDelete />
-          Deleted
-        </span>
-      ),
-      key: 'deleted',
-      danger: true
-    }
-  ]
-
-  const filterState = {
-    items: filters,
-    onClick: (value) => {
-      setActivity(null)
-      if (value.key === 'all') {
-        setActivities(allActivities)
-        setStatusTitle('All')
-      } else if (value.key === 'deleted') {
-        setActivities(deletedActivities)
-        setStatusTitle('Deleted')
-      }
-    }
   }
 
   const columns = [
@@ -345,9 +310,9 @@ const ActivitiesPage = () => {
         name: activity.name,
         code: activity.code,
         employees: (
-          <div className="flex justify-start gap-4">
+          <div className="flex flex-wrap justify-start gap-4">
             {activity.employees.map((employee) => (
-              <div className="flex gap-2 items-center">
+              <div key={employee.id} className="flex gap-2 items-center">
                 <Avatar>
                   <p className="text-lg">{employee.name[0]}</p>
                 </Avatar>
@@ -446,18 +411,39 @@ const ActivitiesPage = () => {
             onSearch={eventHandlers.handleSearchChange}
           />
           <Select
+            bordered={false}
             placeholder="Select employee"
             value={employee}
             options={employees}
             handleSelect={eventHandlers.handleEmployeeSelect}
           />
           <Select
+            bordered={false}
             placeholder="Select project"
             value={project}
             options={projects}
             handleSelect={eventHandlers.handleProjectSelect}
           />
-          <Dropdown title={statusTitle} filters={filterState} />
+          <Select
+            bordered={false}
+            value={statusValue}
+            placeholder="All"
+            options={[
+              {
+                label: 'All',
+                value: 'all'
+              },
+              { label: 'Deleted', value: 'deleted' }
+            ]}
+            handleSelect={(value) => {
+              setStatusValue(value)
+              if (value === 'all') {
+                setActivities(allActivities)
+              } else {
+                setActivities(deletedActivities)
+              }
+            }}
+          />
         </div>
       </div>
       <Suspense fallback={<SkeletonTable />}>

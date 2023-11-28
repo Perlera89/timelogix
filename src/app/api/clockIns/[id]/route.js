@@ -3,22 +3,17 @@ import prisma from '@/libs/prisma'
 
 export async function PUT (restClockIn, { params }) {
   try {
-    const { startTime, date, note, activitieId, proyectId } =
-    await restClockIn.json()
+    const clockinData = await restClockIn.json()
 
     const clockin = await prisma.clock_In.update({
       data: {
-        start_time: startTime,
-        date,
-        note,
-        activitie: {
+        start_time: clockinData.start_time,
+        end_time: clockinData.end_time,
+        date: clockinData.date,
+        note: clockinData.note,
+        employee: {
           connect: {
-            id: activitieId
-          }
-        },
-        proyect: {
-          connect: {
-            id: proyectId
+            id: Number(clockinData.employee_id)
           }
         },
         is_deleted: false

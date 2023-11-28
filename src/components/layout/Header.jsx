@@ -1,5 +1,6 @@
 'use client'
 import { usePathname } from 'next/navigation'
+import dayjs from 'dayjs'
 
 // components
 import React, { useState, useEffect } from 'react'
@@ -8,6 +9,7 @@ import Settings from '@/components/Settings'
 import IconButton from '@/components/button/IconButton'
 import Modal from '@/components/Modal'
 import ClockIn from '@/components/timesheet/ClockIn'
+import Result from '@/components/common/Result'
 
 // icons
 import {
@@ -16,15 +18,21 @@ import {
   RiPlayFill,
   RiStopFill
 } from 'react-icons/ri'
+import axios from 'axios'
+import { CLOCKINS_ROUTE } from '@/utils/apiRoutes'
 
 const { Header } = Layout
-const { Text, Title } = Typography
+const { Title } = Typography
 
 const HeaderPage = ({ handleCollapsed, collapsed }) => {
   // useStates
+  const [clockin, setClockin] = useState({})
   const [startClock, setStartClock] = useState(false)
   const [time, setTime] = useState('00:00:00')
+  const [error, setError] = useState('')
+  const [openResult, setOpenResult] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isClockinValidated, setIsClockinValidated] = useState(false)
 
   const currentPage = usePathname()
   const path =
@@ -32,21 +40,58 @@ const HeaderPage = ({ handleCollapsed, collapsed }) => {
     currentPage.replace('/', '').slice(1)
 
   // handlers
-  const handleOpenModal = () => {
-    setIsModalOpen(true)
-  }
+  const eventHandlers = {
+    handleOpenModal: () => {
+      setIsModalOpen(true)
+    },
+    handleCloseModal: () => {
+      setIsModalOpen(false)
+    },
+    handleOpenResult: () => {
+      setOpenResult(true)
+    },
+    handleCloseResult: () => {
+      setOpenResult(false)
+    },
+    handleSaveClockin: async () => {
+      await axios
+        .post(CLOCKINS_ROUTE, clockin)
+        .then((response) => {
+          setStartClock(true)
+          setClockin(response.data)
+          console.log('response.data', response.data)
+        })
+        .catch((error) => {
+          setError(error)
+          eventHandlers.handleOpenResult()
+        })
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false)
-  }
-
-  const handleSave = () => {
-    setStartClock(true)
-    handleCloseModal()
-  }
-
-  const handleClock = () => {
-    setStartClock(!startClock)
+      eventHandlers.handleCloseModal()
+    },
+    handleUpdateClockin: async () => {
+      console.log('clockin a actualizar', clockin)
+      await axios
+        .put(`${CLOCKINS_ROUTE}/${clockin.id}`, clockin)
+        .then((response) => {
+          console.log('clockin actualizado', response.data)
+        })
+        .catch((error) => {
+          setError(error)
+          eventHandlers.handleOpenResult()
+        })
+    },
+    handleClock: () => {
+      if (startClock) {
+        setStartClock(false)
+        setClockin((clockin.end_time = dayjs().toISOString()))
+        eventHandlers.handleUpdateClockin()
+      } else {
+        setStartClock(true)
+      }
+    },
+    handleClockinValidation: (isValidated) => {
+      setIsClockinValidated(isValidated)
+    }
   }
 
   useEffect(() => {
@@ -128,7 +173,7 @@ const HeaderPage = ({ handleCollapsed, collapsed }) => {
                     />
                   }
                   size="default"
-                  click={handleClock}
+                  click={eventHandlers.handleClock}
                 />
               </div>
                 )
@@ -138,7 +183,7 @@ const HeaderPage = ({ handleCollapsed, collapsed }) => {
                   <RiPlayFill className="mx-2 text-green-500 text-2xl transition-colors animate-pulse transform scale-125 duration-1000 animate-3" />
                 }
                 size="default"
-                click={handleOpenModal}
+                click={eventHandlers.handleOpenModal}
               />
                 )}
             <Settings title="Denis Lopez" />
@@ -149,11 +194,22 @@ const HeaderPage = ({ handleCollapsed, collapsed }) => {
         title="Add Clock in"
         width={400}
         isModalOpen={isModalOpen}
-        handleCancel={handleCloseModal}
-        handleSave={handleSave}
+        handleCancel={eventHandlers.handleCloseModal}
+        handleSave={eventHandlers.handleSaveClockin}
+        validate={!isClockinValidated}
       >
-        <ClockIn />
+        <ClockIn
+          setClockin={setClockin}
+          updateValidation={eventHandlers.handleClockinValidation}
+        />
       </Modal>
+      <Result
+        title={error ? error.request.statusText : null}
+        subtitle={error ? error.message : null}
+        error={error ? error.stack : null}
+        open={openResult}
+        handleClose={eventHandlers.handleCloseResult}
+      />
     </>
   )
 }
