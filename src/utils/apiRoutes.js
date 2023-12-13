@@ -15,3 +15,9 @@ export const PROJECTS_ROUTE = `${ROOT}/projects`
 export const TYPE_PROJECTS_ROUTE = `${ROOT}/type-projects`
 
 export const CLOCKINS_ROUTE = `${ROOT}/clockins`
+
+export const TIMESHEET_ROUTE = `${ROOT}/timesheet`
+
+export const AUTH_ROUTE = `${ROOT}/auth`
+export const REGISTER_ROUTE = `${ROOT}/auth/register`
+export const LOGIN_ROUTE = `${ROOT}/auth/login`

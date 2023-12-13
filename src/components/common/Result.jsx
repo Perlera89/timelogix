@@ -1,8 +1,6 @@
-import React from "react";
+import React from 'react'
 
-import { CloseCircleOutlined } from "@ant-design/icons";
-import { Button, Modal, Result, Typography } from "antd";
-const { Paragraph, Text } = Typography;
+import { Button, Modal, Result } from 'antd'
 const App = ({ title, subtitle, error, open, handleClose }) => (
   <Modal
     open={open}
@@ -19,11 +17,11 @@ const App = ({ title, subtitle, error, open, handleClose }) => (
         onClick={handleClose}
       >
         Close
-      </Button>,
+      </Button>
     ]}
   >
     <Result status="error" title={title} subTitle={subtitle} className="px-0" />
   </Modal>
-);
+)
 
-export default App;
+export default App

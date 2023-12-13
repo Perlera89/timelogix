@@ -1,7 +1,7 @@
 import './globals.css'
 import { Inter } from 'next/font/google'
 import Providers from './providers'
-import Layout from '@/components/layout/Main'
+import { UserProvider } from '@/utils/userContext'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -17,9 +17,9 @@ export default function RootLayout ({ children }) {
         <link rel="icon" href="/favicon.ico" />
       </head>
       <body className={inter.className}>
-        <Providers>
-          <Layout>{children}</Layout>
-        </Providers>
+        <UserProvider>
+          <Providers>{children}</Providers>I
+        </UserProvider>
       </body>
     </html>
   )

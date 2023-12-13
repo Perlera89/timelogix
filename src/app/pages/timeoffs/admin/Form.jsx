@@ -79,8 +79,8 @@ const Admintimeoff = ({
       setDates(selectedDates)
       setTimeoff((prevData) => ({
         ...prevData,
-        start_date: dayjs(startDate.format('YYYY-MM-DDTHH:mm:ssZ')),
-        end_date: dayjs(endDate.format('YYYY-MM-DDTHH:mm:ssZ'))
+        start_date: dayjs(startDate?.format('YYYY-MM-DDTHH:mm:ssZ')),
+        end_date: dayjs(endDate?.format('YYYY-MM-DDTHH:mm:ssZ'))
       }))
     },
     handleNoteChange: (event) => {

@@ -9,20 +9,31 @@ datasource db {
   // directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
+model User {
+  id         Int       @id @default(autoincrement())
+  name       String
+  email      String    @unique
+  password   String
+  is_admin   Boolean   @default(false)
+  is_active  Boolean   @default(true)
+  created_at DateTime? @default(now())
+  is_deleted Boolean   @default(false)
+}
+
 model Employee {
-  id          Int       @id @default(autoincrement())
+  id          Int        @id @default(autoincrement())
   activity_id Int?
   group_id    Int?
   name        String
-  join_date   DateTime? @default(now())
-  first_in    DateTime? @db.Time()
-  last_out    DateTime? @db.Time()
-  note        String    @default("Empty")
+  join_date   DateTime?  @default(now())
+  first_in    DateTime?  @db.Time()
+  last_out    DateTime?  @db.Time()
+  note        String     @default("Empty")
   timeoff     TimeOff[]
   clockins    Clock_In[]
-  is_deleted  Boolean   @default(false)
-  group       Group?    @relation(fields: [group_id], references: [id])
-  activity    Activity? @relation(fields: [activity_id], references: [id])
+  is_deleted  Boolean    @default(false)
+  group       Group?     @relation(fields: [group_id], references: [id])
+  activity    Activity?  @relation(fields: [activity_id], references: [id])
 }
 
 model Group {
@@ -103,12 +114,12 @@ model Type_TimeOff {
 }
 
 model Clock_In {
-  id         Int      @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   employee_id Int
-  start_time DateTime
-  end_time DateTime?
-  date       DateTime @db.Date
-  note       String?
-  is_deleted Boolean  @default(false)
-  employee Employee @relation(fields: [employee_id], references: [id])
+  start_time  DateTime
+  end_time    DateTime?
+  date        DateTime? @default(now())
+  note        String?   @default("Empty")
+  is_deleted  Boolean   @default(false)
+  employee    Employee  @relation(fields: [employee_id], references: [id])
 }

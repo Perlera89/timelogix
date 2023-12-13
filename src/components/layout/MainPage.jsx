@@ -3,8 +3,8 @@ import React, { useState } from 'react'
 
 // components
 import { Layout } from 'antd'
-import Header from '@/components/layout/Header'
-import Sider from '@/components/layout/Sider'
+import Header from '@/components/layout/HeaderClient'
+import Sider from '@/components/layout/SiderPage'
 
 const { Content } = Layout
 

@@ -20,7 +20,7 @@ import { Typography } from 'antd'
 
 const { Text } = Typography
 
-const ClockIn = ({ setClockin, updateValidation }) => {
+const ClockIn = ({ setClockin, updateValidation, updateClockin }) => {
   // states
   const [currentTime, setCurrentTime] = useState(dayjs())
   const [allEmployees, setAllEmployees] = useState([])
@@ -115,7 +115,7 @@ const ClockIn = ({ setClockin, updateValidation }) => {
     }
     resetForm()
     fetchData()
-  }, [])
+  }, [updateClockin])
 
   useEffect(() => {
     const updateCurrentTime = () => {

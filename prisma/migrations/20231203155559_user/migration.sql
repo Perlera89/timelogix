@@ -1,4 +1,20 @@
 -- CreateTable
+CREATE TABLE `User` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `email` VARCHAR(191) NOT NULL,
+    `username` VARCHAR(191) NOT NULL,
+    `password` VARCHAR(191) NOT NULL,
+    `is_admin` BOOLEAN NOT NULL DEFAULT false,
+    `is_active` BOOLEAN NOT NULL DEFAULT true,
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `is_deleted` BOOLEAN NOT NULL DEFAULT false,
+
+    UNIQUE INDEX `User_email_key`(`email`),
+    UNIQUE INDEX `User_username_key`(`username`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `Employee` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `activity_id` INTEGER NULL,
@@ -40,27 +56,6 @@ CREATE TABLE `Type_Holiday` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(191) NOT NULL,
     `color` VARCHAR(191) NULL,
-    `is_deleted` BOOLEAN NOT NULL DEFAULT false,
-
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `Schedule` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `name` VARCHAR(191) NOT NULL,
-    `start_time` TIME(6) NOT NULL,
-    `end_time` TIME(6) NOT NULL,
-    `note` VARCHAR(191) NOT NULL,
-    `is_deleted` BOOLEAN NOT NULL DEFAULT false,
-
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `Work` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `name` VARCHAR(191) NOT NULL,
     `is_deleted` BOOLEAN NOT NULL DEFAULT false,
 
     PRIMARY KEY (`id`)
@@ -125,22 +120,13 @@ CREATE TABLE `Type_TimeOff` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `Work_Schedule` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `schedule_id` INTEGER NOT NULL,
-    `work_id` INTEGER NOT NULL,
-
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
 CREATE TABLE `Clock_In` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `activity_id` INTEGER NOT NULL,
-    `Project_id` INTEGER NOT NULL,
-    `start_time` TIME(6) NOT NULL,
-    `date` DATE NOT NULL,
-    `note` VARCHAR(191) NOT NULL,
+    `employee_id` INTEGER NOT NULL,
+    `start_time` DATETIME(3) NOT NULL,
+    `end_time` DATETIME(3) NULL,
+    `date` DATE NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `note` VARCHAR(191) NULL DEFAULT 'Empty',
     `is_deleted` BOOLEAN NOT NULL DEFAULT false,
 
     PRIMARY KEY (`id`)
@@ -168,13 +154,4 @@ ALTER TABLE `TimeOff` ADD CONSTRAINT `TimeOff_employee_id_fkey` FOREIGN KEY (`em
 ALTER TABLE `TimeOff` ADD CONSTRAINT `TimeOff_type_id_fkey` FOREIGN KEY (`type_id`) REFERENCES `Type_TimeOff`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Work_Schedule` ADD CONSTRAINT `Work_Schedule_schedule_id_fkey` FOREIGN KEY (`schedule_id`) REFERENCES `Schedule`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `Work_Schedule` ADD CONSTRAINT `Work_Schedule_work_id_fkey` FOREIGN KEY (`work_id`) REFERENCES `Work`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `Clock_In` ADD CONSTRAINT `Clock_In_activity_id_fkey` FOREIGN KEY (`activity_id`) REFERENCES `Activity`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `Clock_In` ADD CONSTRAINT `Clock_In_Project_id_fkey` FOREIGN KEY (`Project_id`) REFERENCES `Project`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `Clock_In` ADD CONSTRAINT `Clock_In_employee_id_fkey` FOREIGN KEY (`employee_id`) REFERENCES `Employee`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -1,16 +1,10 @@
-'use client'
-import { usePathname } from 'next/navigation'
-import dayjs from 'dayjs'
-
 // components
-import React, { useState, useEffect } from 'react'
 import { Layout, Button, Typography } from 'antd'
 import Settings from '@/components/Settings'
 import IconButton from '@/components/button/IconButton'
 import Modal from '@/components/Modal'
 import ClockIn from '@/components/timesheet/ClockIn'
 import Result from '@/components/common/Result'
-
 // icons
 import {
   RiArrowLeftSLine,
@@ -18,111 +12,25 @@ import {
   RiPlayFill,
   RiStopFill
 } from 'react-icons/ri'
-import axios from 'axios'
-import { CLOCKINS_ROUTE } from '@/utils/apiRoutes'
 
 const { Header } = Layout
 const { Title } = Typography
 
-const HeaderPage = ({ handleCollapsed, collapsed }) => {
-  // useStates
-  const [clockin, setClockin] = useState({})
-  const [startClock, setStartClock] = useState(false)
-  const [time, setTime] = useState('00:00:00')
-  const [error, setError] = useState('')
-  const [openResult, setOpenResult] = useState(false)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isClockinValidated, setIsClockinValidated] = useState(false)
-
-  const currentPage = usePathname()
-  const path =
-    currentPage.replace('/', '').charAt(0).toUpperCase() +
-    currentPage.replace('/', '').slice(1)
-
-  // handlers
-  const eventHandlers = {
-    handleOpenModal: () => {
-      setIsModalOpen(true)
-    },
-    handleCloseModal: () => {
-      setIsModalOpen(false)
-    },
-    handleOpenResult: () => {
-      setOpenResult(true)
-    },
-    handleCloseResult: () => {
-      setOpenResult(false)
-    },
-    handleSaveClockin: async () => {
-      await axios
-        .post(CLOCKINS_ROUTE, clockin)
-        .then((response) => {
-          setStartClock(true)
-          setClockin(response.data)
-          console.log('response.data', response.data)
-        })
-        .catch((error) => {
-          setError(error)
-          eventHandlers.handleOpenResult()
-        })
-
-      eventHandlers.handleCloseModal()
-    },
-    handleUpdateClockin: async () => {
-      console.log('clockin a actualizar', clockin)
-      await axios
-        .put(`${CLOCKINS_ROUTE}/${clockin.id}`, clockin)
-        .then((response) => {
-          console.log('clockin actualizado', response.data)
-        })
-        .catch((error) => {
-          setError(error)
-          eventHandlers.handleOpenResult()
-        })
-    },
-    handleClock: () => {
-      if (startClock) {
-        setStartClock(false)
-        setClockin((clockin.end_time = dayjs().toISOString()))
-        eventHandlers.handleUpdateClockin()
-      } else {
-        setStartClock(true)
-      }
-    },
-    handleClockinValidation: (isValidated) => {
-      setIsClockinValidated(isValidated)
-    }
-  }
-
-  useEffect(() => {
-    let intervalId
-
-    if (startClock) {
-      let seconds = 0
-      intervalId = setInterval(() => {
-        seconds++
-        const formattedTime = formatTime(seconds)
-        setTime(formattedTime)
-      }, 1000)
-    }
-
-    return () => {
-      clearInterval(intervalId)
-    }
-  }, [startClock])
-
-  const formatTime = (seconds) => {
-    const hours = Math.floor(seconds / 3600)
-    const minutes = Math.floor((seconds % 3600) / 60)
-    const remainingSeconds = seconds % 60
-
-    const formattedHours = String(hours).padStart(2, '0')
-    const formattedMinutes = String(minutes).padStart(2, '0')
-    const formattedSeconds = String(remainingSeconds).padStart(2, '0')
-
-    return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`
-  }
-
+const HeaderPage = ({
+  clockin,
+  error,
+  path,
+  startClock,
+  time,
+  setClockin,
+  openResult,
+  isModalOpen,
+  isClockinValidated,
+  eventHandlers,
+  handleCollapsed,
+  collapsed,
+  user
+}) => {
   return (
     <>
       <Header
@@ -157,7 +65,7 @@ const HeaderPage = ({ handleCollapsed, collapsed }) => {
               className="flex items-center text-ghost-white mt-3"
               level={4}
             >
-              {path}
+              {path.slice(5)}
             </Title>
           </div>
           <div className="flex justify-end mr-4 gap-4">
@@ -186,7 +94,7 @@ const HeaderPage = ({ handleCollapsed, collapsed }) => {
                 click={eventHandlers.handleOpenModal}
               />
                 )}
-            <Settings title="Denis Lopez" />
+            <Settings title={user?.name} />
           </div>
         </div>
       </Header>
@@ -201,6 +109,7 @@ const HeaderPage = ({ handleCollapsed, collapsed }) => {
         <ClockIn
           setClockin={setClockin}
           updateValidation={eventHandlers.handleClockinValidation}
+          updateClockin={!true}
         />
       </Modal>
       <Result

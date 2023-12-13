@@ -6,12 +6,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 // icons
-import {
-  RiTimeFill,
-  RiPagesFill,
-  RiCalendarFill,
-  RiSuitcase2Fill
-} from 'react-icons/ri'
+import { RiTimeFill, RiCalendarFill, RiSuitcase2Fill } from 'react-icons/ri'
 import { HiUsers } from 'react-icons/hi'
 import { BsTagFill } from 'react-icons/bs'
 import { GoFileDirectoryFill } from 'react-icons/go'
@@ -34,32 +29,35 @@ const SiderPage = ({ collapsed }) => {
 
   const items = [
     getItem(
-      <Link href="/timesheet">Timesheet</Link>,
+      <Link href="/pages/timesheet">Timesheet</Link>,
       'timesheet',
       <RiTimeFill />
     ),
     getItem(
-      <Link href="/projects">Projects</Link>,
+      <Link href="/pages/projects">Projects</Link>,
       'projects',
       <GoFileDirectoryFill />
     ),
     getItem(
-      <Link href="/activities">Activities</Link>,
+      <Link href="/pages/activities">Activities</Link>,
       'activities',
       <BsTagFill />
     ),
     getItem(
-      <Link href="/timeoffs">Time Offs</Link>,
+      <Link href="/pages/timeoffs">Time Offs</Link>,
       'timeoff',
       <RiSuitcase2Fill />
     ),
     getItem(
-      <Link href="/holidays">Holidays</Link>,
+      <Link href="/pages/holidays">Holidays</Link>,
       'holidays',
       <RiCalendarFill />
     ),
-    getItem(<Link href="/employees">Employees</Link>, 'employees', <HiUsers />),
-    getItem(<Link href="/reports">Reports</Link>, 'reports', <RiPagesFill />)
+    getItem(
+      <Link href="/pages/employees">Employees</Link>,
+      'employees',
+      <HiUsers />
+    )
   ]
 
   return (
@@ -78,7 +76,7 @@ const SiderPage = ({ collapsed }) => {
           height={100}
           onClick={() => {
             setSelectedKey('timesheet')
-            router.push('/')
+            router.push('/pages/timesheet')
           }}
         />
       </div>

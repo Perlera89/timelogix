@@ -495,8 +495,8 @@ const TimeOffsPage = () => {
         status: (
           <Tag
             bordered={false}
-            color={statusMapping.color}
-            icon={statusMapping.icon}
+            color={statusMapping?.color}
+            icon={statusMapping?.icon}
           >
             {timeoff.status}
           </Tag>

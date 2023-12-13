@@ -5,6 +5,7 @@ export async function GET () {
   const employees = await prisma.employee.findMany({
     include: {
       group: true,
+      clockins: true,
       activity: true
     }
   })
